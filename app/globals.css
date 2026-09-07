@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 @import '../styles/shadcn.css';
 :root {
-  --background: #111619;
+  --background: #fff;
   --foreground: #f7f3e9;
   --primary: #f7f3e9;
   --primary-foreground: #182025;
@@ -160,7 +160,7 @@ svg {
 }
 .scene-image.film-terminal {
   object-fit: contain;
-  background: #efeff0;
+  background: #fff;
 }
 .scene-shade {
   position: absolute;
@@ -310,7 +310,7 @@ svg {
   position: absolute;
   z-index: 5;
   inset: 0;
-  background: #efeff0;
+  background: #fff;
   color: var(--ink);
 }
 .intro-film video {
@@ -802,5 +802,53 @@ svg {
       rgba(9, 16, 22, 0.88) 80%,
       rgba(9, 16, 22, 0.94)
     );
+  }
+}
+
+/* Keep the whole film visible on a white phone canvas; the WU still matches it. */
+@media (max-width: 767px) and (orientation: portrait) {
+  .intro-film video,
+  .scene-image.film-terminal {
+    object-position: center 25% !important;
+  }
+  .scene-image.film-terminal {
+    height: 100svh !important;
+  }
+  .vienna-experience.phase-ended[data-university="0"] {
+    min-height: max(100svh, calc(25svh + 42.1875vw + 390px));
+  }
+  .university-scene:first-child .scene-shade {
+    display: none;
+  }
+  .university-scene:first-child .university-story {
+    top: calc(25svh + 42.1875vw + 28px);
+    bottom: auto;
+    color: var(--ink);
+  }
+  .university-scene:first-child .scene-eyebrow,
+  .university-scene:first-child .university-description {
+    color: #655e75;
+  }
+  .vienna-experience[data-university="0"] .site-header,
+  .vienna-experience[data-university="0"] .site-footer,
+  .vienna-experience[data-university="0"] .scene-pagination {
+    color: var(--ink);
+  }
+  .vienna-experience[data-university="0"] .brand {
+    mix-blend-mode: normal;
+    filter: brightness(0);
+    opacity: 0.85;
+  }
+  .vienna-experience[data-university="0"] .site-footer,
+  .vienna-experience[data-university="0"] .consult-link {
+    border-color: rgba(41, 34, 105, 0.2);
+  }
+  .vienna-experience[data-university="0"] .pagination-line {
+    background: rgba(41, 34, 105, 0.3);
+  }
+  .vienna-experience[data-university="0"] .scene-arrow {
+    color: var(--ink) !important;
+    background: rgba(41, 34, 105, 0.06) !important;
+    border-color: rgba(41, 34, 105, 0.2) !important;
   }
 }

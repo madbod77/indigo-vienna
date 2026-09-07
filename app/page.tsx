@@ -143,7 +143,7 @@ export default function Home() {
   };
   const replay = start;
   return (
-    <main className={`vienna-experience phase-${phase}`}>
+    <main className={`vienna-experience phase-${phase}`} data-university={selected}>
       <h1 className="sr-only">Університети Відня з Indigo</h1>
       <div className="destination" inert={intro} aria-hidden={intro}>
         <header className="site-header">
