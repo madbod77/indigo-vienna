@@ -12,9 +12,6 @@ import {
   ChevronDown,
   Copy,
   Plus,
-  GraduationCap,
-  BookOpen,
-  Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { basePath } from "@/site.config";
@@ -514,20 +511,13 @@ export default function Home() {
           </div>
           <p className="lead">{info.intro}</p>
           <div className="path-grid">
-            {info.paths.map((path, i) => (
+            {info.paths.map((path) => (
               <article key={path.title}>
-                <span className="path-symbol" aria-hidden="true">
-                  {i === 0 ? (
-                    <GraduationCap />
-                  ) : i === 1 ? (
-                    <BookOpen />
-                  ) : (
-                    <Languages />
-                  )}
-                </span>
                 <h3>{path.title}</h3>
-                <p>{path.text}</p>
-                <SourceLink source={path.source} />
+                <div className="path-description">
+                  <p>{path.text}</p>
+                  <SourceLink source={path.source} />
+                </div>
               </article>
             ))}
           </div>
