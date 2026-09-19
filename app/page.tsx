@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -6,6 +12,9 @@ import {
   ChevronDown,
   Copy,
   Plus,
+  GraduationCap,
+  BookOpen,
+  Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { basePath } from "@/site.config";
@@ -67,8 +76,12 @@ function Consultation({ country }: { country: Country }) {
   const [draft, setDraft] = useState("");
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
+  const [touched, setTouched] = useState({ name: false, stage: false });
+  const nameError = touched.name && !name.trim();
+  const stageError = touched.stage && !stage;
   const preview = useRef<HTMLDivElement>(null);
   const nameInput = useRef<HTMLInputElement>(null);
+  const stageInput = useRef<HTMLSelectElement>(null);
   useEffect(() => {
     setDestination(countries[country].name);
     setDraft("");
@@ -77,9 +90,10 @@ function Consultation({ country }: { country: Country }) {
   }, [country]);
   function prepare(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!name.trim()) {
-      nameInput.current?.setCustomValidity("Будь ласка, введіть ваше ім’я.");
-      nameInput.current?.reportValidity();
+    setTouched({ name: true, stage: true });
+    if (!name.trim() || !stage) {
+      if (!name.trim()) nameInput.current?.focus();
+      else stageInput.current?.focus();
       return;
     }
     setDraft(
@@ -108,9 +122,9 @@ function Consultation({ country }: { country: Country }) {
         <div className="consultation-copy">
           <p className="eyebrow">ВАШ ПЕРШИЙ КРОК</p>
           <h2 id="consultation-title">
-            Великий крок.
+            Спочатку —
             <br />
-            <em>Почнімо з розмови.</em>
+            <em>просто розмова.</em>
           </h2>
           <p className="lead">
             Запишіться на безкоштовну консультацію. Обговоримо ваш напрям,
@@ -129,7 +143,7 @@ function Consultation({ country }: { country: Country }) {
         </div>
         <div className="form-panel">
           {!draft ? (
-            <form onSubmit={prepare}>
+            <form onSubmit={prepare} noValidate>
               <h3>Заявка на консультацію</h3>
               <p className="form-help">
                 Кілька деталей — і ви зможете надіслати заявку в Telegram.
@@ -143,12 +157,17 @@ function Consultation({ country }: { country: Country }) {
                 required
                 maxLength={80}
                 value={name}
-                onChange={(e) => {
-                  e.currentTarget.setCustomValidity("");
-                  setName(e.target.value);
-                }}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setTouched((value) => ({ ...value, name: true }))}
+                aria-invalid={nameError || undefined}
+                aria-describedby={nameError ? "name-error" : undefined}
                 placeholder="Як до вас звертатися?"
               />
+              {nameError && (
+                <p className="field-error" id="name-error" role="alert">
+                  Вкажіть, будь ласка, ваше ім’я.
+                </p>
+              )}
               <div className="form-row">
                 <div>
                   <label htmlFor="destination">Країна навчання</label>
@@ -166,8 +185,14 @@ function Consultation({ country }: { country: Country }) {
                 <div>
                   <label htmlFor="stage">Ваш етап</label>
                   <select
+                    ref={stageInput}
                     id="stage"
                     name="stage"
+                    onBlur={() =>
+                      setTouched((value) => ({ ...value, stage: true }))
+                    }
+                    aria-invalid={stageError || undefined}
+                    aria-describedby={stageError ? "stage-error" : undefined}
                     value={stage}
                     onChange={(e) => setStage(e.target.value)}
                     required
@@ -182,6 +207,11 @@ function Consultation({ country }: { country: Country }) {
                     <option>Звертаюся як мама / тато</option>
                     <option>Інша ситуація</option>
                   </select>
+                  {stageError && (
+                    <p className="field-error" id="stage-error" role="alert">
+                      Оберіть ваш етап навчання.
+                    </p>
+                  )}
                 </div>
               </div>
               <label htmlFor="question">
@@ -256,6 +286,108 @@ function Consultation({ country }: { country: Country }) {
     </section>
   );
 }
+function CountrySwitch({
+  country,
+  onChange,
+  scene = false,
+}: {
+  country: Country;
+  onChange: (value: Country) => void;
+  scene?: boolean;
+}) {
+  const indicator = useRef<HTMLSpanElement>(null);
+  const spring = useRef({ value: country === "de" ? 1 : 0, velocity: 0 });
+  useLayoutEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const target = country === "de" ? 1 : 0;
+    let frame = 0;
+    let last = 0;
+    const geometry = { x: 0, y: 0 };
+    const container = indicator.current?.parentElement;
+    if (!container) return;
+    const paint = () => {
+      if (indicator.current)
+        indicator.current.style.transform = `translate(${geometry.x * spring.current.value}px, ${geometry.y * spring.current.value}px)`;
+    };
+    const measure = () => {
+      const buttons = container.querySelectorAll("button");
+      if (!indicator.current || buttons.length !== 2) return;
+      geometry.x = buttons[1].offsetLeft - buttons[0].offsetLeft;
+      geometry.y = buttons[1].offsetTop - buttons[0].offsetTop;
+      Object.assign(indicator.current.style, {
+        left: `${buttons[0].offsetLeft}px`,
+        top: `${buttons[0].offsetTop}px`,
+        width: `${buttons[0].offsetWidth}px`,
+        height: `${buttons[0].offsetHeight}px`,
+        bottom: "auto",
+      });
+      paint();
+    };
+    measure();
+    const resize = new ResizeObserver(measure);
+    resize.observe(container);
+    function step(now: number) {
+      const dt = last ? Math.min((now - last) / 1000, 0.032) : 1 / 60;
+      last = now;
+      const state = spring.current;
+      const acceleration = 300 * (target - state.value) - 35 * state.velocity;
+      state.velocity += acceleration * dt;
+      state.value += state.velocity * dt;
+      paint();
+      if (
+        Math.abs(target - state.value) > 0.0005 ||
+        Math.abs(state.velocity) > 0.001
+      )
+        frame = requestAnimationFrame(step);
+      else {
+        state.value = target;
+        state.velocity = 0;
+        paint();
+      }
+    }
+    function start() {
+      cancelAnimationFrame(frame);
+      if (media.matches) {
+        spring.current = { value: target, velocity: 0 };
+        paint();
+      } else {
+        last = 0;
+        frame = requestAnimationFrame(step);
+      }
+    }
+    start();
+    media.addEventListener("change", start);
+    return () => {
+      cancelAnimationFrame(frame);
+      resize.disconnect();
+      media.removeEventListener("change", start);
+    };
+  }, [country]);
+  return (
+    <div
+      className={"country-switch" + (scene ? " scene-switch" : "")}
+      role="group"
+      aria-label="Оберіть країну навчання"
+    >
+      <span className="switch-indicator" aria-hidden="true" ref={indicator} />
+      <button
+        type="button"
+        aria-pressed={country === "at"}
+        onClick={() => onChange("at")}
+      >
+        Австрія
+      </button>
+      <button
+        type="button"
+        aria-pressed={country === "de"}
+        onClick={() => onChange("de")}
+      >
+        Німеччина
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [country, setCountry] = useState<Country>(readCountry);
   const [allQuestions, setAllQuestions] = useState(false);
@@ -269,6 +401,10 @@ export default function Home() {
     return () => window.removeEventListener("popstate", sync);
   }, []);
   function choose(value: Country, scroll = false) {
+    if (value === country) {
+      if (scroll) document.getElementById("guide")?.scrollIntoView();
+      return;
+    }
     setCountry(value);
     setAllQuestions(false);
     const url = new URL(window.location.href);
@@ -295,66 +431,72 @@ export default function Home() {
         </a>
       </header>
       <main id="main">
-        <section className="hero wrap">
-          <div className="hero-title">
-            <p className="eyebrow">INDIGO · ОСВІТА ЗА КОРДОНОМ</p>
-            <h1>
-              Ваш наступний розділ.
-              <br />
-              <em>Австрія та Німеччина.</em>
-            </h1>
-          </div>
-          <div className="hero-note">
-            <p>
-              Великий вибір стає простішим, коли є ясний план. Дізнайтеся про
-              вступ, вимоги та бюджет — і знайдіть свій перший крок.
-            </p>
-            <a className="text-link" href="#consultation">
-              Почнімо з консультації <ArrowUpRight size={18} />
-            </a>
-          </div>
+        <section className="hero wrap" aria-labelledby="hero-title">
+          <p className="eyebrow">Вступ до Австрії та Німеччини</p>
+          <h1 id="hero-title">
+            Ваша освіта.
+            <br />
+            <span>Без кордонів.</span>
+          </h1>
+          <p className="hero-description">
+            Від першого «куди?» до ясного плану вступу.
+            <br /> Знайдіть свій напрям разом з Indigo.
+          </p>
+          <a className="button hero-cta" href="#consultation">
+            Безкоштовна консультація <ArrowUpRight size={18} />
+          </a>
         </section>
         <section
-          className="directions wrap"
+          className="destination-stage"
           id="directions"
           aria-label="Оберіть країну навчання"
+          data-country={country}
         >
-          {(Object.keys(countries) as Country[]).map((id, i) => (
-            <a
-              key={id}
-              className={"country-card country-" + id}
-              href={"?country=" + id + "#guide"}
-              onClick={(e) => {
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-                e.preventDefault();
-                choose(id, true);
-              }}
-            >
-              <div className="country-photo">
-                <img
-                  src={basePath + "/images/" + countries[id].image}
-                  alt={countries[id].alt}
-                  width="1600"
-                  height={id === "at" ? 1241 : 1200}
-                  fetchPriority={id === "at" ? "high" : "auto"}
-                />
-                <span className="photo-caption">{countries[id].city}</span>
-              </div>
-              <div className="country-label">
-                <div>
-                  <span className="eyebrow">
-                    0{i + 1} / {countries[id].local}
-                  </span>
-                  <h2>{countries[id].name}</h2>
-                  <p>{countries[id].caption}</p>
-                </div>
-                <span className="circle-arrow">
-                  <ArrowUpRight size={24} />
-                </span>
-              </div>
+          <div className="destination-visuals">
+            {(Object.keys(countries) as Country[]).map((id) => (
+              <img
+                key={id}
+                className={"destination-image image-" + id}
+                src={basePath + "/images/" + countries[id].image}
+                alt={id === country ? countries[id].alt : ""}
+                aria-hidden={id !== country}
+                data-active={id === country}
+                width="1600"
+                height={id === "at" ? 1241 : 1200}
+                fetchPriority={id === country ? "high" : "auto"}
+              />
+            ))}
+          </div>
+          <div className="scene-controls">
+            <CountrySwitch
+              country={country}
+              onChange={(value) => choose(value)}
+              scene
+            />
+          </div>
+          <div className="destination-caption">
+            <div>
+              <p className="destination-kicker">ВАШ НАПРЯМ</p>
+              <h2>
+                {info.name}
+                <span>.</span>
+              </h2>
+              <p className="destination-location">{info.city}</p>
+            </div>
+            <a className="scene-link" href="#guide">
+              Про вступ <ArrowUpRight size={21} />
             </a>
-          ))}
+          </div>
         </section>
+        <div
+          className="intro-facts wrap"
+          role="group"
+          aria-label="Освітні можливості"
+        >
+          <span>Бакалаврат</span>
+          <span>Магістратура</span>
+          <span>Підготовчі програми</span>
+        </div>
         <section
           className="section wrap guide"
           id="guide"
@@ -365,32 +507,24 @@ export default function Home() {
               <p className="eyebrow">МОЖЛИВОСТІ ТА ВИМОГИ</p>
               <h2 id="guide-title">{info.title}</h2>
             </div>
-            <div
-              className="country-switch"
-              role="group"
-              aria-label="Оберіть країну для інформації"
-            >
-              <button
-                type="button"
-                aria-pressed={country === "at"}
-                onClick={() => choose("at")}
-              >
-                Австрія
-              </button>
-              <button
-                type="button"
-                aria-pressed={country === "de"}
-                onClick={() => choose("de")}
-              >
-                Німеччина
-              </button>
-            </div>
+            <CountrySwitch
+              country={country}
+              onChange={(value) => choose(value)}
+            />
           </div>
           <p className="lead">{info.intro}</p>
           <div className="path-grid">
             {info.paths.map((path, i) => (
               <article key={path.title}>
-                <span className="path-number">0{i + 1}</span>
+                <span className="path-symbol" aria-hidden="true">
+                  {i === 0 ? (
+                    <GraduationCap />
+                  ) : i === 1 ? (
+                    <BookOpen />
+                  ) : (
+                    <Languages />
+                  )}
+                </span>
                 <h3>{path.title}</h3>
                 <p>{path.text}</p>
                 <SourceLink source={path.source} />
@@ -414,7 +548,7 @@ export default function Home() {
           <div className="wrap">
             <div className="section-heading">
               <p className="eyebrow">{info.name.toUpperCase()} · ФІНАНСИ</p>
-              <h2 id="budget-title">Поговорімо про бюджет.</h2>
+              <h2 id="budget-title">Великі плани. Ясний бюджет.</h2>
             </div>
             <div className="budget-grid">
               <div className="living-cost">
@@ -455,7 +589,7 @@ export default function Home() {
             <p className="eyebrow">
               {info.name.toUpperCase()} · ШЛЯХ ДО НАВЧАННЯ
             </p>
-            <h2 id="steps-title">Крок за кроком.</h2>
+            <h2 id="steps-title">Вступ стає зрозумілим.</h2>
           </div>
           <ol className="steps">
             {info.steps.map((step, i) => (
@@ -488,9 +622,9 @@ export default function Home() {
               {info.name.toUpperCase()} · ПИТАННЯ Й ВІДПОВІДІ
             </p>
             <h2 id="faq-title">
-              Те, що хочеться
+              Важливі питання.
               <br />
-              <em>з’ясувати спочатку.</em>
+              <em>Прості відповіді.</em>
             </h2>
             <p>Короткі відповіді та офіційні джерела для вашого рішення.</p>
             <a className="text-link" href="#guide">
