@@ -1,381 +1,599 @@
-'use client';
-import { basePath } from '@/site.config';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  Pause,
-  Play,
-  RotateCcw,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel';
-const universitySources = [
-  [
-    'Universität Wien',
-    'Класичний університет',
-    'Гуманітарні, природничі та соціальні науки',
-    '01-universitaet-wien',
-    'https://studieren.univie.ac.at/zulassungsverfahren/bachelor-diplomstudien/',
-  ],
-  [
-    'WU Wien',
-    'Економіка та бізнес',
-    'Економіка, менеджмент і міжнародний бізнес',
-    '03-wu-wien',
-    'https://www.wu.ac.at/en/programs/application-and-admission',
-  ],
-  [
-    'TU Wien',
-    'Технології та інженерія',
-    'Інженерія, інформатика й архітектура',
-    '02-tu-wien',
-    'https://www.tuwien.at/en/studies/admission/bachelors-programmes',
-  ],
-  [
-    'Hochschule Campus Wien',
-    'Прикладні науки',
-    'Здоров’я, соціальна робота, технології та інші напрями',
-    '08-hochschule-campus-wien',
-    'https://www.hcw.ac.at/studium-weiterbildung/bewerbung-und-aufnahme',
-  ],
+  Check,
+  ChevronDown,
+  Copy,
+  Plus,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { basePath } from "@/site.config";
+import { countries, type Country, type Source } from "./admissions";
 
-  [
-    'MedUni Wien',
-    'Медицина',
-    'Медицина та стоматологія',
-    '04-meduni-wien',
-    'https://www.meduniwien.ac.at/web/en/studies-further-education/application-admission/medicine-and-dentistry-degree/',
-  ],
-  [
-    'BOKU University',
-    'Науки про життя',
-    'Довкілля, природні ресурси й біотехнології',
-    '05-boku',
-    'https://boku.ac.at/en/studienservices/themen/zulassung/',
-  ],
-  [
-    'mdw',
-    'Музика та сцена',
-    'Музика, виконавське мистецтво та кіно',
-    '06-mdw',
-    'https://online.mdw.ac.at/mdw_online/webnav.willkommen',
-  ],
-  [
-    'Die Angewandte',
-    'Мистецтво та дизайн',
-    'Візуальне мистецтво, дизайн і медіамистецтво',
-    '07-die-angewandte',
-    'https://www.dieangewandte.at/entrance',
-  ],
-  [
-    'FH Technikum Wien',
-    'Прикладна інженерія',
-    'Технології, інженерія та цифрові системи',
-    '09-fh-technikum-wien',
-    'https://www.technikum-wien.at/en/student-guide/admissions-process/',
-  ],
-  [
-    'FHWien der WKW',
-    'Прикладний бізнес',
-    'Менеджмент і комунікації',
-    '10-fhwien-der-wkw',
-    'https://www.fh-wien.ac.at/en/study/application/',
-  ],
-];
-
-const universities = [
-  universitySources[1],
-  universitySources[0],
-  ...universitySources.slice(2),
-];
-
-export default function Home() {
-  const [phase, setPhase] = useState<'idle' | 'playing' | 'ended'>('idle');
-  const intro = phase !== 'ended';
-  const [reduced, setReduced] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const [selected, setSelected] = useState(0);
-  const [api, setApi] = useState<CarouselApi>();
-  const video = useRef<HTMLVideoElement>(null);
-  const chooser = useRef<HTMLDivElement>(null);
-  const endIntro = useCallback(() => {
-    video.current?.pause();
-    setPhase('ended');
-    requestAnimationFrame(() => chooser.current?.focus());
-  }, []);
-  useEffect(() => {
-    const motion = matchMedia('(prefers-reduced-motion: reduce)');
-    const preference = () => {
-      setReduced(motion.matches);
-    };
-    preference();
-    motion.addEventListener('change', preference);
-    return () => {
-      motion.removeEventListener('change', preference);
-    };
-  }, [endIntro]);
-
-  useEffect(() => {
-    if (!api) return;
-    const select = () => setSelected(api.selectedScrollSnap());
-    select();
-    api.on('select', select);
-    return () => {
-      api.off('select', select);
-    };
-  }, [api]);
-  const skip = () => {
-    endIntro();
-    requestAnimationFrame(() => chooser.current?.focus());
-  };
-  const start = () => {
-    api?.scrollTo(0, true);
-    if (video.current) video.current.currentTime = 0;
-    setPhase('playing');
-    video.current?.play().catch(() => setPlaying(false));
-  };
-  const replay = start;
+function readCountry(): Country {
+  return new URLSearchParams(window.location.search).get("country") === "de"
+    ? "de"
+    : "at";
+}
+function SourceLink({ source }: { source: Source }) {
   return (
-    <main className={`vienna-experience phase-${phase}`} data-university={selected}>
-      <h1 className="sr-only">Університети Відня з Indigo</h1>
-      <div className="destination" inert={intro} aria-hidden={intro}>
-        <header className="site-header">
-          <a
-            href="https://www.instagram.com/indigo_education_centre/"
-            target="_blank"
-            rel="noreferrer"
-            className="brand"
-            aria-label="Indigo Education Centre в Instagram"
+    <a
+      className="source-link"
+      href={source.url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {source.label} <ArrowUpRight size={13} />
+    </a>
+  );
+}
+function Brand() {
+  return (
+    <a className="brand" href={basePath + "/"} aria-label="Indigo — головна">
+      <svg viewBox="0 0 480 276" role="img" aria-label="Indigo">
+        <defs>
+          <filter
+            id="ink-key"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            colorInterpolationFilters="sRGB"
           >
-            <svg
-              viewBox="0 0 480 276"
-              aria-hidden="true"
-              className="brand-wordmark"
-            >
-              <defs>
-                <filter
-                  id="brand-paper-key"
-                  x="0"
-                  y="0"
-                  width="100%"
-                  height="100%"
-                  colorInterpolationFilters="sRGB"
-                >
-                  <feColorMatrix
-                    type="matrix"
-                    values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 -2 0 0 1.6"
-                  />
-                </filter>
-              </defs>
-              <image
-                href={`${basePath}/images/indigo-wordmark.webp`}
-                width="480"
-                height="276"
-                filter="url(#brand-paper-key)"
-              />
-            </svg>
-          </a>
-          <div className="header-location">
-            <span>Навчання в Австрії</span>
-            <span>Wien, Österreich</span>
+            <feColorMatrix
+              type="matrix"
+              values="0 0 0 0 .19 0 0 0 0 .14 0 0 0 0 .42 -.8 -.8 -.8 0 2.15"
+            />
+          </filter>
+        </defs>
+        <image
+          href={basePath + "/images/indigo-wordmark.webp"}
+          width="480"
+          height="276"
+          filter="url(#ink-key)"
+        />
+      </svg>
+    </a>
+  );
+}
+function Consultation({ country }: { country: Country }) {
+  const [name, setName] = useState("");
+  const [destination, setDestination] = useState<string>(
+    countries[country].name,
+  );
+  const [stage, setStage] = useState("");
+  const [question, setQuestion] = useState("");
+  const [draft, setDraft] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const preview = useRef<HTMLDivElement>(null);
+  const nameInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    setDestination(countries[country].name);
+    setDraft("");
+    setCopied(false);
+    setCopyError(false);
+  }, [country]);
+  function prepare(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!name.trim()) {
+      nameInput.current?.setCustomValidity("Будь ласка, введіть ваше ім’я.");
+      nameInput.current?.reportValidity();
+      return;
+    }
+    setDraft(
+      `Вітаю, Indigo! Хочу записатися на безкоштовну консультацію щодо вступу.\n\nІм’я: ${name.trim()}\nКраїна: ${destination}\nМій етап: ${stage}${question.trim() ? `\nЗапитання: ${question.trim()}` : ""}`,
+    );
+    setCopied(false);
+    setCopyError(false);
+    requestAnimationFrame(() => preview.current?.focus());
+  }
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(draft);
+      setCopied(true);
+      setCopyError(false);
+    } catch {
+      setCopyError(true);
+    }
+  }
+  return (
+    <section
+      className="consultation"
+      id="consultation"
+      aria-labelledby="consultation-title"
+    >
+      <div className="wrap consultation-grid">
+        <div className="consultation-copy">
+          <p className="eyebrow">ВАШ ПЕРШИЙ КРОК</p>
+          <h2 id="consultation-title">
+            Великий крок.
+            <br />
+            <em>Почнімо з розмови.</em>
+          </h2>
+          <p className="lead">
+            Запишіться на безкоштовну консультацію. Обговоримо ваш напрям,
+            рівень мови, бюджет і питання, з яких варто почати.
+          </p>
+          <div className="consult-topics">
+            <span>Вибір країни та програми</span>
+            <span>Вимоги й документи</span>
+            <span>Терміни та наступні кроки</span>
           </div>
-          <nav aria-label="Головна навігація">
-            <button
-              className="replay-link"
-              onClick={replay}
-              aria-label="Відтворити вступне відео"
-            >
-              <RotateCcw size={16} />
-              <span>Подорож спочатку</span>
-            </button>
+          <p className="contact-alternative">
+            Зручніше поговорити?
+            <br />
+            <a href="tel:+380506093398">+380 50 609 33 98</a>
+          </p>
+        </div>
+        <div className="form-panel">
+          {!draft ? (
+            <form onSubmit={prepare}>
+              <h3>Заявка на консультацію</h3>
+              <p className="form-help">
+                Кілька деталей — і ви зможете надіслати заявку в Telegram.
+              </p>
+              <label htmlFor="applicant-name">Ваше ім’я</label>
+              <input
+                ref={nameInput}
+                id="applicant-name"
+                name="name"
+                autoComplete="given-name"
+                required
+                maxLength={80}
+                value={name}
+                onChange={(e) => {
+                  e.currentTarget.setCustomValidity("");
+                  setName(e.target.value);
+                }}
+                placeholder="Як до вас звертатися?"
+              />
+              <div className="form-row">
+                <div>
+                  <label htmlFor="destination">Країна навчання</label>
+                  <select
+                    id="destination"
+                    name="country"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                  >
+                    <option>Австрія</option>
+                    <option>Німеччина</option>
+                    <option>Ще обираю</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="stage">Ваш етап</label>
+                  <select
+                    id="stage"
+                    name="stage"
+                    value={stage}
+                    onChange={(e) => setStage(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>
+                      Оберіть етап
+                    </option>
+                    <option>Ще навчаюся у школі</option>
+                    <option>Маю атестат</option>
+                    <option>Навчаюся у виші</option>
+                    <option>Планую магістратуру</option>
+                    <option>Звертаюся як мама / тато</option>
+                    <option>Інша ситуація</option>
+                  </select>
+                </div>
+              </div>
+              <label htmlFor="question">
+                Що вас цікавить? <span>Необов’язково</span>
+              </label>
+              <textarea
+                id="question"
+                name="question"
+                rows={3}
+                maxLength={600}
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Напрям, бажаний рік вступу або ваше запитання"
+              />
+              <Button type="submit" className="form-submit">
+                Підготувати заявку <ArrowRight size={18} />
+              </Button>
+              <p className="privacy-note">
+                Спочатку перевірте текст, потім надішліть його в Telegram
+                @Natalia_Indigo. Форма сама повідомлень не надсилає.
+              </p>
+            </form>
+          ) : (
+            <div ref={preview} className="draft-panel" tabIndex={-1}>
+              <p className="eyebrow">ЗАЯВКУ ПІДГОТОВЛЕНО</p>
+              <h3>Залишилося надіслати</h3>
+              <p className="form-help">
+                Перевірте текст. У чаті Telegram натисніть «Надіслати», щоб
+                Indigo отримав вашу заявку.
+              </p>
+              <label className="sr-only" htmlFor="request-preview">
+                Текст заявки
+              </label>
+              <textarea id="request-preview" readOnly rows={9} value={draft} />
+              <a
+                className="button form-submit"
+                href={
+                  "https://t.me/Natalia_Indigo?text=" +
+                  encodeURIComponent(draft)
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
+                Відкрити Telegram <ArrowUpRight size={18} />
+              </a>
+              <div className="draft-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraft("");
+                    requestAnimationFrame(() => nameInput.current?.focus());
+                  }}
+                >
+                  Змінити дані
+                </button>
+                <button type="button" onClick={copy}>
+                  {copied ? <Check size={16} /> : <Copy size={16} />}
+                  {copied ? "Скопійовано" : "Скопіювати текст"}
+                </button>
+              </div>
+              <p role="status" className="privacy-note">
+                {copyError
+                  ? "Виділіть текст заявки вище та скопіюйте вручну."
+                  : copied
+                    ? "Текст скопійовано. Його можна вставити в чат @Natalia_Indigo."
+                    : "Якщо текст не з’явиться в Telegram, скопіюйте його та вставте в чат."}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+export default function Home() {
+  const [country, setCountry] = useState<Country>(readCountry);
+  const [allQuestions, setAllQuestions] = useState(false);
+  const info = countries[country];
+  useEffect(() => {
+    const sync = () => {
+      setCountry(readCountry());
+      setAllQuestions(false);
+    };
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+  function choose(value: Country, scroll = false) {
+    setCountry(value);
+    setAllQuestions(false);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("film");
+    url.searchParams.set("country", value);
+    if (scroll) url.hash = "guide";
+    window.history.pushState({}, "", url);
+    if (scroll) document.getElementById("guide")?.scrollIntoView();
+  }
+  return (
+    <>
+      <a className="skip-link" href="#main">
+        До основного змісту
+      </a>
+      <header className="header wrap">
+        <Brand />
+        <nav aria-label="Головна навігація">
+          <a href="#directions">Напрями</a>
+          <a href="#steps">Як вступити</a>
+          <a href="#faq">Питання</a>
+        </nav>
+        <a className="button header-cta" href="#consultation">
+          Безкоштовна консультація <ArrowUpRight size={17} />
+        </a>
+      </header>
+      <main id="main">
+        <section className="hero wrap">
+          <div className="hero-title">
+            <p className="eyebrow">INDIGO · ОСВІТА ЗА КОРДОНОМ</p>
+            <h1>
+              Ваш наступний розділ.
+              <br />
+              <em>Австрія та Німеччина.</em>
+            </h1>
+          </div>
+          <div className="hero-note">
+            <p>
+              Великий вибір стає простішим, коли є ясний план. Дізнайтеся про
+              вступ, вимоги та бюджет — і знайдіть свій перший крок.
+            </p>
+            <a className="text-link" href="#consultation">
+              Почнімо з консультації <ArrowUpRight size={18} />
+            </a>
+          </div>
+        </section>
+        <section
+          className="directions wrap"
+          id="directions"
+          aria-label="Оберіть країну навчання"
+        >
+          {(Object.keys(countries) as Country[]).map((id, i) => (
             <a
-              className="consult-link"
-              href="https://t.me/Natalia_Indigo"
+              key={id}
+              className={"country-card country-" + id}
+              href={"?country=" + id + "#guide"}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                e.preventDefault();
+                choose(id, true);
+              }}
+            >
+              <div className="country-photo">
+                <img
+                  src={basePath + "/images/" + countries[id].image}
+                  alt={countries[id].alt}
+                  width="1600"
+                  height={id === "at" ? 1241 : 1200}
+                  fetchPriority={id === "at" ? "high" : "auto"}
+                />
+                <span className="photo-caption">{countries[id].city}</span>
+              </div>
+              <div className="country-label">
+                <div>
+                  <span className="eyebrow">
+                    0{i + 1} / {countries[id].local}
+                  </span>
+                  <h2>{countries[id].name}</h2>
+                  <p>{countries[id].caption}</p>
+                </div>
+                <span className="circle-arrow">
+                  <ArrowUpRight size={24} />
+                </span>
+              </div>
+            </a>
+          ))}
+        </section>
+        <section
+          className="section wrap guide"
+          id="guide"
+          aria-labelledby="guide-title"
+        >
+          <div className="guide-head">
+            <div className="section-heading">
+              <p className="eyebrow">МОЖЛИВОСТІ ТА ВИМОГИ</p>
+              <h2 id="guide-title">{info.title}</h2>
+            </div>
+            <div
+              className="country-switch"
+              role="group"
+              aria-label="Оберіть країну для інформації"
+            >
+              <button
+                type="button"
+                aria-pressed={country === "at"}
+                onClick={() => choose("at")}
+              >
+                Австрія
+              </button>
+              <button
+                type="button"
+                aria-pressed={country === "de"}
+                onClick={() => choose("de")}
+              >
+                Німеччина
+              </button>
+            </div>
+          </div>
+          <p className="lead">{info.intro}</p>
+          <div className="path-grid">
+            {info.paths.map((path, i) => (
+              <article key={path.title}>
+                <span className="path-number">0{i + 1}</span>
+                <h3>{path.title}</h3>
+                <p>{path.text}</p>
+                <SourceLink source={path.source} />
+              </article>
+            ))}
+          </div>
+          <div className="catalogue">
+            <p>{info.catalogueNote}</p>
+            <a
+              className="text-link"
+              href={info.catalogue.url}
               target="_blank"
               rel="noreferrer"
             >
-              Обговорити вступ <ArrowUpRight size={17} />
+              {info.catalogue.label}
+              <ArrowUpRight size={17} />
             </a>
-          </nav>
-        </header>
-        <Carousel
-          className="university-chooser"
-          opts={{ loop: true, duration: reduced ? 0 : 35 }}
-          setApi={setApi}
-          aria-label="Оберіть університет Відня"
-          aria-roledescription="карусель"
-          onKeyDownCapture={(e) => {
-            if (e.key === 'ArrowLeft') {
-              e.preventDefault();
-              api?.scrollPrev(reduced);
-            }
-            if (e.key === 'ArrowRight') {
-              e.preventDefault();
-              api?.scrollNext(reduced);
-            }
-            if (e.key === 'Home') {
-              e.preventDefault();
-              api?.scrollTo(0, reduced);
-            }
-            if (e.key === 'End') {
-              e.preventDefault();
-              api?.scrollTo(universities.length - 1, reduced);
-            }
-          }}
-        >
-          <CarouselContent className="scene-track">
-            {universities.map((u, i) => (
-              <CarouselItem
-                key={u[3]}
-                className="university-scene"
-                aria-label={`${i + 1} із ${universities.length}: ${u[0]}`}
-                aria-hidden={selected !== i}
-                inert={selected !== i}
-              >
-                <img
-                  src={
-                    i === 0
-                      ? `${basePath}/images/wu-trimmed-23-25-terminal.webp`
-                      : `${basePath}/images/${u[3]}.webp`
-                  }
-                  alt={`Архітектурна візуалізація ${u[0]}`}
-                  fetchPriority={i === 0 ? 'high' : 'auto'}
-                  loading={i === 0 ? undefined : 'eager'}
-                  className={
-                    i === 0
-                      ? 'scene-image film-terminal'
-                      : u[3] === '08-hochschule-campus-wien'
-                        ? 'scene-image campus-hcw'
-                        : 'scene-image'
-                  }
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: i === 0 ? 'contain' : 'cover', objectPosition: 'center' }}
-                />
-                <div className="scene-shade" aria-hidden="true" />
-                <article className="university-story">
-                  <p className="scene-eyebrow">Відень · {u[1]}</p>
-                  <h2>{u[0]}</h2>
-                  <div className="story-bottom">
-                    <p className="university-description">{u[2]}.</p>
-                    <a
-                      className="admission-link"
-                      href={u[4]}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Умови вступу <ArrowUpRight size={17} />
-                    </a>
-                  </div>
-                </article>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <div className="chooser-controls" ref={chooser} tabIndex={-1}>
-            <div
-              className="scene-pagination"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <span className="current-number">
-                {String(selected + 1).padStart(2, '0')}
-              </span>
-              <span className="pagination-line" aria-hidden="true" />
-              <span>10</span>
-              <span className="sr-only"> · {universities[selected][0]}</span>
+          </div>
+        </section>
+        <section className="budget" aria-labelledby="budget-title">
+          <div className="wrap">
+            <div className="section-heading">
+              <p className="eyebrow">{info.name.toUpperCase()} · ФІНАНСИ</p>
+              <h2 id="budget-title">Поговорімо про бюджет.</h2>
             </div>
+            <div className="budget-grid">
+              <div className="living-cost">
+                <span className="budget-label">ЖИТТЯ НА МІСЯЦЬ</span>
+                <p className="cost-number">{info.living}</p>
+                <p>{info.livingNote}</p>
+                <SourceLink source={info.livingSource} />
+              </div>
+              <div className="tuition">
+                <h3>{info.tuition}</h3>
+                <p>{info.tuitionNote}</p>
+                <SourceLink source={info.tuitionSource} />
+              </div>
+              <div className="extra-cost">
+                <h3>Що додати до бюджету</h3>
+                <p>
+                  Переклади та засвідчення документів, подання заяв, мовні
+                  іспити чи підготовка, дорога та депозит за житло.
+                </p>
+                <a href="#consultation" className="text-link">
+                  Обговорити свою ситуацію
+                  <ArrowUpRight size={16} />
+                </a>
+              </div>
+            </div>
+            <p className="data-date">
+              Орієнтири перевірено 19 вересня 2026. Остаточні суми й пільги
+              звіряйте для свого закладу, набору та статусу.
+            </p>
           </div>
-          <div className="scene-arrows">
-            <Button
-              variant="ghost"
-              className="scene-arrow"
-              aria-label="Попередній університет"
-              onClick={() => api?.scrollPrev(reduced)}
-            >
-              <ArrowLeft size={23} />
-            </Button>
-            <Button
-              variant="ghost"
-              className="scene-arrow"
-              aria-label="Наступний університет"
-              onClick={() => api?.scrollNext(reduced)}
-            >
-              <ArrowRight size={23} />
-            </Button>
+        </section>
+        <section
+          className="section wrap"
+          id="steps"
+          aria-labelledby="steps-title"
+        >
+          <div className="section-heading">
+            <p className="eyebrow">
+              {info.name.toUpperCase()} · ШЛЯХ ДО НАВЧАННЯ
+            </p>
+            <h2 id="steps-title">Крок за кроком.</h2>
           </div>
-        </Carousel>
-        <footer className="site-footer">
+          <ol className="steps">
+            {info.steps.map((step, i) => (
+              <li key={step.title}>
+                <span className="step-number">0{i + 1}</span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="steps-footer">
+            <p>
+              Ще не визначилися з країною чи спеціальністю?
+              <br />
+              Це теж хороша точка для першої розмови.
+            </p>
+            <a className="button" href="#consultation">
+              Безкоштовна консультація
+              <ArrowUpRight size={18} />
+            </a>
+          </div>
+        </section>
+        <section
+          className="faq section wrap"
+          id="faq"
+          aria-labelledby="faq-title"
+        >
+          <div className="faq-heading">
+            <p className="eyebrow">
+              {info.name.toUpperCase()} · ПИТАННЯ Й ВІДПОВІДІ
+            </p>
+            <h2 id="faq-title">
+              Те, що хочеться
+              <br />
+              <em>з’ясувати спочатку.</em>
+            </h2>
+            <p>Короткі відповіді та офіційні джерела для вашого рішення.</p>
+            <a className="text-link" href="#guide">
+              Змінити країну
+              <ArrowRight size={16} />
+            </a>
+          </div>
+          <div className="faq-list" key={country}>
+            {info.faq.slice(0, allQuestions ? undefined : 6).map((item) => (
+              <details key={item.question} name="admissions-faq">
+                <summary>
+                  {item.question}
+                  <Plus size={19} />
+                </summary>
+                <div className="faq-answer">
+                  <p>{item.answer}</p>
+                  <SourceLink source={item.source} />
+                </div>
+              </details>
+            ))}
+            <button
+              className="more-questions"
+              type="button"
+              aria-expanded={allQuestions}
+              onClick={() => setAllQuestions(!allQuestions)}
+            >
+              {allQuestions
+                ? "Показати менше"
+                : "Ще питання: робота, стипендії та майбутнє"}
+              <ChevronDown
+                size={17}
+                style={{
+                  transform: allQuestions ? "rotate(180deg)" : undefined,
+                }}
+              />
+            </button>
+          </div>
+        </section>
+        <Consultation country={country} />
+      </main>
+      <footer className="wrap">
+        <div className="footer">
+          <span>Indigo · Австрія та Німеччина</span>
+          <a href="tel:+380506093398">+380 50 609 33 98</a>
           <a
-            className="footer-brand-link"
             href="https://www.instagram.com/indigo_education_centre/"
             target="_blank"
             rel="noreferrer"
           >
-            Indigo Education Centre <ArrowUpRight size={14} />
+            Instagram
+            <ArrowUpRight size={14} />
           </a>
-          <span className="visual-note">Архітектурні візуалізації</span>
-          <a className="phone-link" href="tel:+380506093398">
-            +380 50 609 33 98
+          <a href="#main">
+            Нагору
+            <ArrowRight size={14} />
           </a>
-        </footer>
-      </div>
-      <section
-        className={`intro-film phase-${phase}`}
-        hidden={!intro}
-        aria-label="Вступна подорож Indigo"
-      >
-        <video
-          ref={video}
-          muted
-          playsInline
-          preload="auto"
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={endIntro}
-          onError={endIntro}
-          aria-label="Рукописний Indigo, перетворення глобуса на Землю та політ до WU Wien"
-        >
-          <source
-            src={`${basePath}/video/indigo-trimmed-23.25s.mp4`}
-            type="video/mp4"
-            onError={endIntro}
-          />
-        </video>
-        {phase === 'idle' && (
-          <div className="start-canvas">
-            <Button className="start-button" onClick={start}>
-              <span className="start-play" aria-hidden="true">
-                <Play size={17} fill="currentColor" strokeWidth={1.5} />
-              </span>
-              <span>Почати відео</span>
-            </Button>
-          </div>
-        )}
-        {phase === 'playing' && (
-          <div className="intro-controls">
-            <Button
-              variant="ghost"
-              className="intro-toggle"
-              aria-label={playing ? 'Призупинити відео' : 'Відтворити відео'}
-              onClick={() =>
-                playing
-                  ? video.current?.pause()
-                  : video.current?.play().catch(endIntro)
-              }
-            >
-              {playing ? <Pause size={17} /> : <Play size={17} />}
-            </Button>
-            <button className="intro-skip" onClick={skip}>
-              До університетів <ArrowRight size={20} />
-            </button>
-          </div>
-        )}
-      </section>
-    </main>
+        </div>
+        <div className="footer-meta">
+          <p>
+            Вимоги залежать від програми та вашої ситуації. Рішення про
+            зарахування приймає навчальний заклад.
+          </p>
+          <details className="photo-credits">
+            <summary>Автори фотографій</summary>
+            <p>
+              <a
+                href="https://commons.wikimedia.org/wiki/File:Exterior_of_Vienna_State_Opera_House,_August_2019.jpg"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Відень: Benoît Prieur / Wikimedia Commons
+              </a>{" "}
+              ·{" "}
+              <a
+                href="https://creativecommons.org/publicdomain/zero/1.0/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                CC0
+              </a>
+              . Зменшено.
+            </p>
+            <p>
+              <a
+                href="https://commons.wikimedia.org/wiki/File:Berliner_Dom_from_Humboldtforum_rooftop.jpg"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Берлін: Gerda Arendt / Wikimedia Commons
+              </a>{" "}
+              ·{" "}
+              <a
+                href="https://creativecommons.org/licenses/by-sa/4.0/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                CC BY-SA 4.0
+              </a>
+              . Зменшено, кадровано у відображенні.
+            </p>
+          </details>
+        </div>
+      </footer>
+    </>
   );
 }
