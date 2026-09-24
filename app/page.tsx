@@ -14,7 +14,6 @@ import {
   Menu,
   Plus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { basePath } from "@/site.config";
 import { countries, type Country, type Source } from "./admissions";
 import { universities } from "./universities";
@@ -63,6 +62,45 @@ function Brand() {
         />
       </svg>
     </a>
+  );
+}
+function MobileMenu() {
+  const menu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const closeOutside = (event: Event) => {
+      if (menu.current?.open && !menu.current.contains(event.target as Node))
+        menu.current.open = false;
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && menu.current?.open) {
+        menu.current.open = false;
+        menu.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("focusin", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("focusin", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+  return (
+    <details className="mobile-menu" ref={menu}>
+      <summary>Меню <Menu size={18} /></summary>
+      <nav aria-label="Мобільна навігація" onClick={(event) => {
+        if ((event.target as HTMLElement).closest("a") && menu.current)
+          menu.current.open = false;
+      }}>
+        <a href="#directions">Напрями</a>
+        <a href="#guide">Умови вступу</a>
+        <a href="#budget">Бюджет</a>
+        <a href="#steps">Як вступити</a>
+        <a href="#faq">Питання</a>
+        <a href="#consultation">Консультація</a>
+      </nav>
+    </details>
   );
 }
 function Consultation({ country }: { country: Country }) {
@@ -225,9 +263,9 @@ function Consultation({ country }: { country: Country }) {
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Напрям, бажаний рік вступу або ваше запитання"
               />
-              <Button type="submit" className="form-submit">
+              <button type="submit" className="button form-submit">
                 Підготувати заявку <ArrowRight size={18} />
-              </Button>
+              </button>
               <p className="privacy-note">
                 Спочатку перевірте текст, потім надішліть його в Telegram
                 @Natalia_Indigo. Форма сама повідомлень не надсилає.
@@ -435,20 +473,7 @@ export default function Home() {
           <a href="#steps">Як вступити</a>
           <a href="#faq">Питання</a>
         </nav>
-        <details className="mobile-menu">
-          <summary>Меню <Menu size={18} /></summary>
-          <nav aria-label="Мобільна навігація" onClick={(event) => {
-            if ((event.target as HTMLElement).closest("a"))
-              event.currentTarget.closest("details")?.removeAttribute("open");
-          }}>
-            <a href="#directions">Напрями</a>
-            <a href="#guide">Умови вступу</a>
-            <a href="#budget">Бюджет</a>
-            <a href="#steps">Як вступити</a>
-            <a href="#faq">Питання</a>
-            <a href="#consultation">Консультація</a>
-          </nav>
-        </details>
+        <MobileMenu />
         <a className="button header-cta" href="#consultation">
           <span><span className="header-cta-prefix">Безкоштовна </span>консультація</span> <ArrowUpRight size={17} />
         </a>
@@ -488,13 +513,19 @@ export default function Home() {
               <img
                 key={id}
                 className={"destination-image image-" + id}
-                src={basePath + "/images/" + countries[id].image}
+                src={basePath + "/images/" + countries[id].image.replace(".jpg", "-1600.webp")}
+                srcSet={[800, 1200, 1600].map((width) =>
+                  `${basePath}/images/${countries[id].image.replace(".jpg", `-${width}.webp`)} ${width}w`
+                ).join(", ")}
+                // Allow for the full image width behind the portrait object-fit crop.
+                sizes="(max-width: 600px) 580px, (max-width: 800px) 710px, (max-width: 1100px) 760px, 900px"
                 alt={id === country ? countries[id].alt : ""}
                 aria-hidden={id !== country}
                 data-active={id === country}
                 width="1600"
                 height={id === "at" ? 1241 : 1200}
-                fetchPriority={id === country ? "high" : "auto"}
+                fetchPriority={id === country ? "high" : "low"}
+                decoding="async"
               />
             ))}
           </div>
