@@ -428,7 +428,29 @@ function CountrySwitch({
 export default function Home() {
   const [country, setCountry] = useState<Country>(readCountry);
   const [allQuestions, setAllQuestions] = useState(false);
+  const [allUniversities, setAllUniversities] = useState(false);
   const info = countries[country];
+  useLayoutEffect(() => {
+    const header = document.querySelector<HTMLElement>(".header");
+    const guide = document.querySelector<HTMLElement>(".guide-index");
+    if (!header || !guide) return;
+    const measure = () => {
+      const headerHeight = header.getBoundingClientRect().height;
+      const guideHeight = getComputedStyle(guide).position === "sticky"
+        ? guide.getBoundingClientRect().height : 0;
+      document.documentElement.style.setProperty("--header-height", `${headerHeight}px`);
+      document.documentElement.style.setProperty("--reading-offset", `${headerHeight + guideHeight + 16}px`);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    observer.observe(guide);
+    window.addEventListener("resize", measure);
+    measure();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
   useLayoutEffect(() => {
     // A fresh document can resolve its fragment before React has created the section.
     const target = document.getElementById(window.location.hash.slice(1));
@@ -447,18 +469,20 @@ export default function Home() {
     return () => window.removeEventListener("popstate", sync);
   }, []);
   function choose(value: Country, scroll = false) {
-    if (value === country) {
-      if (scroll) document.getElementById("guide")?.scrollIntoView();
-      return;
+    const changed = value !== country;
+    if (changed) {
+      setCountry(value);
+      setAllQuestions(false);
     }
-    setCountry(value);
-    setAllQuestions(false);
     const url = new URL(window.location.href);
     url.searchParams.delete("film");
     url.searchParams.set("country", value);
     if (scroll) url.hash = "guide";
-    window.history.pushState({}, "", url);
-    if (scroll) document.getElementById("guide")?.scrollIntoView();
+    if (url.href !== window.location.href) {
+      if (changed) window.history.pushState({}, "", url);
+      else window.history.replaceState({}, "", url);
+    }
+    if (scroll) requestAnimationFrame(() => document.getElementById("guide")?.scrollIntoView());
   }
   return (
     <>
@@ -470,7 +494,7 @@ export default function Home() {
         <nav aria-label="Головна навігація">
           <a href="#directions">Напрями</a>
           <a href="#guide">Вступ</a>
-          <a href="#steps">Як вступити</a>
+          <a href="#budget">Бюджет</a>
           <a href="#faq">Питання</a>
         </nav>
         <MobileMenu />
@@ -479,96 +503,69 @@ export default function Home() {
         </a>
       </header>
       <main id="main">
-        <div className="hero-layout wrap">
-        <section className="hero" aria-labelledby="hero-title">
-          <p className="eyebrow">Вступ до Австрії та Німеччини</p>
-          <h1 id="hero-title">
-            Ваша освіта.
-            <br />
-            <span>Без кордонів.</span>
-          </h1>
-          <p className="hero-description">
-            Від першого «куди?» до ясного плану вступу.
-            <br /> Знайдіть свій напрям разом з Indigo.
-          </p>
-          <div className="hero-actions">
-          <a className="button hero-cta" href="#consultation">
-            Безкоштовна консультація <ArrowUpRight size={18} />
-          </a>
-          <a className="hero-secondary" href="#guide">Дізнатися про вступ <ArrowRight size={17} /></a>
-          </div>
-          <div className="hero-note">
-            <span className="note-mark" aria-hidden="true">↗</span>
-            <p>Дві країни. Безліч можливостей.<br /><span>Один наступний крок — ваш.</span></p>
-          </div>
-        </section>
-        <section
-          className="destination-stage"
-          id="directions"
-          aria-label="Оберіть країну навчання"
-          data-country={country}
-        >
-          <div className="destination-visuals">
+        <section className="hero-experience" aria-labelledby="hero-title">
+          <div className="hero-art" aria-hidden="true">
             {(Object.keys(countries) as Country[]).map((id) => (
-              <img
-                key={id}
-                className={"destination-image image-" + id}
+              <img key={id} data-active={id === country}
                 src={basePath + "/images/" + countries[id].image.replace(".jpg", "-1600.webp")}
                 srcSet={[800, 1200, 1600].map((width) =>
                   `${basePath}/images/${countries[id].image.replace(".jpg", `-${width}.webp`)} ${width}w`
                 ).join(", ")}
-                // Allow for the full image width behind the portrait object-fit crop.
-                sizes="(max-width: 600px) 580px, (max-width: 800px) 710px, (max-width: 1100px) 760px, 900px"
-                alt={id === country ? countries[id].alt : ""}
-                aria-hidden={id !== country}
-                data-active={id === country}
-                width="1600"
-                height={id === "at" ? 1241 : 1200}
-                fetchPriority={id === country ? "high" : "low"}
-                decoding="async"
-              />
+                sizes="(max-width: 700px) 100vw, 75vw"
+                alt="" width="1600" height={id === "at" ? 1241 : 1200}
+                fetchPriority={id === country ? "high" : "low"} decoding="async" />
             ))}
           </div>
-          <div className="scene-controls">
-            <CountrySwitch
-              country={country}
-              onChange={(value) => choose(value)}
-              scene
-            />
-          </div>
-          <div className="destination-caption">
-            <div>
-              <p className="destination-kicker">ВАШ НАПРЯМ · {info.local}</p>
-              <h2>
-                {info.name}
-                <span>.</span>
-              </h2>
-              <p className="destination-location">{info.city}</p>
-              <p className="destination-description">{info.caption}</p>
+          <div className="hero">
+            <p className="eyebrow"><span className="hero-dot" /> ВСТУП ДО АВСТРІЇ ТА НІМЕЧЧИНИ</p>
+            <h1 id="hero-title">Ваша освіта.<br /><span>Без кордонів.</span></h1>
+            <p className="hero-description">Від першого «куди?» до ясного плану вступу.<br /> Знайдіть свій напрям разом з Indigo.</p>
+            <div className="hero-actions">
+              <a className="button hero-cta" href="#consultation">Безкоштовна консультація <ArrowUpRight size={18} /></a>
+              <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={17} /></a>
             </div>
-            <a className="scene-link" href="#guide">
-              Про вступ <ArrowUpRight size={21} />
-            </a>
+            <div className="intro-facts" role="group" aria-label="Освітні можливості">
+              <span>Бакалаврат</span><span>Магістратура</span><span>Підготовчі програми</span>
+            </div>
+            <div className="hero-country-choice"><CountrySwitch country={country} onChange={(value) => choose(value)} scene /></div>
+          </div>
+          <div className="hero-location">
+            <span className="location-cross" aria-hidden="true">＋</span>
+            <div><span>{info.local}</span><p>{info.city}</p></div>
+          </div>
+          <div className="hero-edge" aria-hidden="true">INDIGO / EDUCATION WITHOUT BORDERS</div>
+        </section>
+        <section className="destinations section wrap" id="directions" aria-labelledby="directions-title">
+          <div className="destinations-heading">
+            <div><p className="eyebrow">ДВА НАПРЯМИ. ВАШ ВИБІР.</p><h2 id="directions-title">Де почнеться<br /><em>ваша нова історія?</em></h2></div>
+            <p>Дві країни. Безліч можливостей.<br />Оберіть напрям — і перегляньте вимоги,<br className="desktop-break" /> бюджет та кроки до вступу.<br />Один наступний крок — ваш.</p>
+          </div>
+          <div className="destination-options">
+            {(Object.keys(countries) as Country[]).map((id, index) => (
+              <button type="button" key={id} className="destination-option" aria-pressed={country === id}
+                onClick={() => choose(id, true)} aria-label={`Обрати напрям: ${countries[id].name}`}>
+                <img src={basePath + "/images/" + countries[id].image.replace(".jpg", "-800.webp")}
+                  alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
+                <span className="option-content">
+                  <span className="option-meta">0{index + 1} / {countries[id].local}<span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
+                  <span className="option-name">{countries[id].name}</span>
+                  <span className="option-description">{countries[id].caption}</span>
+                  <span className="option-bottom"><span>Умови та бюджет</span><span className="option-arrow"><ArrowUpRight size={20} /></span></span>
+                </span>
+              </button>
+            ))}
           </div>
         </section>
-        </div>
-        <div
-          className="intro-facts wrap"
-          role="group"
-          aria-label="Освітні можливості"
-        >
-          <span>Бакалаврат</span>
-          <span>Магістратура</span>
-          <span>Підготовчі програми</span>
-        </div>
-        <div className="guide-index wrap">
-          <span>Ваш довідник <ArrowRight size={16} /></span>
-          <nav aria-label="Розділи довідника">
-            <a href="#guide"><span>01</span> Вступ</a>
-            <a href="#budget"><span>02</span> Бюджет</a>
-            <a href="#steps"><span>03</span> Кроки</a>
-            <a href="#faq"><span>04</span> Питання</a>
-          </nav>
+        <div className="guide-index">
+          <div className="wrap guide-index-inner">
+            <span className="guide-current"><span className="country-dot" />{info.name}<span className="guide-current-label"> / ваш довідник</span></span>
+            <nav aria-label="Розділи довідника">
+              <a href="#guide"><span>01</span> Вступ</a>
+              <a href="#budget"><span>02</span> Бюджет</a>
+              <a href="#steps"><span>03</span> Кроки</a>
+              <a href="#faq"><span>04</span> Питання</a>
+            </nav>
+          </div>
         </div>
         <section
           className="section wrap guide"
@@ -610,24 +607,25 @@ export default function Home() {
             </a>
           </div>
           {country === "at" && (
-            <details className="universities" id="universities">
-              <summary>
-                <span>Університети Відня</span>
-                <span className="university-count">10 закладів <Plus size={19} /></span>
-              </summary>
+            <section className="universities" id="universities" aria-labelledby="universities-title">
+              <div className="universities-heading"><div><p className="eyebrow">МІСТО, У ЯКОМУ НАВЧАЮТЬСЯ</p><h3 id="universities-title">Знайомтесь: університети Відня</h3></div><span className="university-count">10 закладів</span></div>
+              <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад.</p>
               <div className="university-content">
-                <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад.</p>
-                <ul>
-                  {universities.map((university) => (
+                <ul id="university-list">
+                  {universities.slice(0, allUniversities ? undefined : 3).map((university, index) => (
                     <li key={university.name}>
-                      <div><h3>{university.name}</h3><p className="university-category">{university.category}</p></div>
+                      <span className="university-number">{String(index + 1).padStart(2, "0")} / VIENNA</span>
+                      <div><h4>{university.name}</h4><p className="university-category">{university.category}</p></div>
                       <p>{university.description}</p>
                       <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Офіційний вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
                     </li>
                   ))}
                 </ul>
+                <button type="button" className="university-toggle" aria-expanded={allUniversities} aria-controls="university-list" onClick={() => setAllUniversities(!allUniversities)}>
+                  {allUniversities ? "Згорнути добірку" : "Переглянути всі 10 університетів"}<ChevronDown size={18} style={{ transform: allUniversities ? "rotate(180deg)" : undefined }} />
+                </button>
               </div>
-            </details>
+            </section>
           )}
         </section>
         <section className="budget" id="budget" aria-labelledby="budget-title">
@@ -721,6 +719,7 @@ export default function Home() {
             </a>
           </div>
           <div className="faq-list" key={country}>
+            <p className="faq-count">{info.name} <span>{info.faq.length} питань</span></p>
             {info.faq.slice(0, allQuestions ? undefined : 6).map((item) => (
               <details key={item.question} name="admissions-faq">
                 <summary>
@@ -741,7 +740,7 @@ export default function Home() {
             >
               {allQuestions
                 ? "Показати менше"
-                : "Ще питання: робота, стипендії та майбутнє"}
+                : "Ще 4 питання: робота, стипендії та майбутнє"}
               <ChevronDown
                 size={17}
                 style={{
