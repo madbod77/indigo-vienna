@@ -55,3 +55,7 @@ SOFTWARE.
 ## Dependencies and media
 
 Other installed libraries retain their licenses in their npm packages. Indigo branding and project media are separate project assets; the third-party MIT notices above do not relicense those assets.
+
+## Manrope
+
+Manrope by Mikhail Sharanda, Mirko Velimirovic and contributors is distributed under the SIL Open Font License 1.1. The Cyrillic and Latin variable WOFF2 subsets are self-hosted in `public/fonts/`; the complete license and copyright statement is `public/fonts/OFL-Manrope.txt` (also copied to the static export).
