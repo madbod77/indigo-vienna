@@ -59,3 +59,6 @@ Other installed libraries retain their licenses in their npm packages. Indigo br
 ## Manrope
 
 Manrope by Mikhail Sharanda, Mirko Velimirovic and contributors is distributed under the SIL Open Font License 1.1. The Cyrillic and Latin variable WOFF2 subsets are self-hosted in `public/fonts/`; the complete license and copyright statement is `public/fonts/OFL-Manrope.txt` (also copied to the static export).
+
+
+Мобільна оптимізація, 24.09.2026: до наявних фотографій міст додано WebP480; до ілюстрацій кампусів — WebP480/800/1440. Розмір і стиснення змінено локально, авторство та ліцензії вихідних матеріалів збережено. Оригінали лишаються в public/images.

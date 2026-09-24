@@ -74,7 +74,7 @@ function Brand() {
     </a>
   );
 }
-function MobileMenu() {
+function MobileMenu({ country }: { country: Country }) {
   const menu = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     const closeOutside = (event: Event) => {
@@ -103,14 +103,40 @@ function MobileMenu() {
         if ((event.target as HTMLElement).closest("a") && menu.current)
           menu.current.open = false;
       }}>
+        <p className="menu-context">Довідник: {countries[country].name}</p>
         <a href="#directions">Напрями</a>
         <a href="#guide">Умови вступу</a>
+        {country === "at" && <a href="#universities">Університети</a>}
         <a href="#budget">Бюджет</a>
         <a href="#steps">Як вступити</a>
         <a href="#faq">Питання</a>
-        <a href="#consultation">Консультація</a>
+        <a href="#consultation-form">Консультація</a>
       </nav>
     </details>
+  );
+}
+function MobileShortcuts() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const hero = document.querySelector(".hero-actions");
+    const consultation = document.getElementById("consultation");
+    if (!hero || !consultation) return;
+    const update = () => setVisible(
+      hero.getBoundingClientRect().bottom < 0 &&
+      consultation.getBoundingClientRect().top >= window.innerHeight,
+    );
+    const observer = new IntersectionObserver(update);
+    observer.observe(hero);
+    observer.observe(consultation);
+    update();
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <nav className="mobile-dock" aria-label="Швидкі переходи" hidden={!visible}>
+      <a href="#guide"><BookOpen size={19} /><span>Вступ</span></a>
+      <a href="#budget"><Wallet size={19} /><span>Бюджет</span></a>
+      <a className="dock-consultation" href="#consultation-form"><span>Консультація</span><ArrowUpRight size={18} /></a>
+    </nav>
   );
 }
 function Consultation({ country }: { country: Country }) {
@@ -188,7 +214,7 @@ function Consultation({ country }: { country: Country }) {
             <a href="tel:+380506093398">+380 50 609 33 98</a>
           </p>
         </div>
-        <div className="form-panel">
+        <div className="form-panel" id="consultation-form" tabIndex={-1}>
           {!draft ? (
             <form onSubmit={prepare} noValidate>
               <h3>Заявка на консультацію</h3>
@@ -201,6 +227,7 @@ function Consultation({ country }: { country: Country }) {
                 id="applicant-name"
                 name="name"
                 autoComplete="given-name"
+                enterKeyHint="next"
                 required
                 maxLength={80}
                 value={name}
@@ -267,6 +294,7 @@ function Consultation({ country }: { country: Country }) {
               <textarea
                 id="question"
                 name="question"
+                enterKeyHint="done"
                 rows={3}
                 maxLength={600}
                 value={question}
@@ -439,7 +467,20 @@ export default function Home() {
   const [country, setCountry] = useState<Country>(readCountry);
   const [allQuestions, setAllQuestions] = useState(false);
   const [allUniversities, setAllUniversities] = useState(false);
+  const universityToggle = useRef<HTMLButtonElement>(null);
   const info = countries[country];
+  function toggleUniversities() {
+    const expanding = !allUniversities;
+    setAllUniversities(expanding);
+    requestAnimationFrame(() => {
+      // Keep the reader at the changed list instead of following the shrinking page.
+      const target = expanding
+        ? document.querySelector<HTMLElement>("#university-list li:nth-child(4)")
+        : universityToggle.current;
+      target?.focus({ preventScroll: true });
+      target?.scrollIntoView({ behavior: "instant", block: "start" });
+    });
+  }
   useLayoutEffect(() => {
     const header = document.querySelector<HTMLElement>(".header");
     const guide = document.querySelector<HTMLElement>(".guide-index");
@@ -507,8 +548,8 @@ export default function Home() {
           <a href="#budget">Бюджет</a>
           <a href="#faq">Питання</a>
         </nav>
-        <MobileMenu />
-        <a className="button header-cta" href="#consultation">
+        <MobileMenu country={country} />
+        <a className="button header-cta" href="#consultation-form">
           <span><span className="header-cta-prefix">Безкоштовна </span>консультація</span> <ArrowUpRight size={17} />
         </a>
       </header>
@@ -519,7 +560,7 @@ export default function Home() {
             <h1 id="hero-title">Ваша освіта.<br /><span>Без кордонів.</span></h1>
             <p className="hero-description">Від першого «куди?» до ясного плану вступу.<br /> Знайдіть свій напрям разом з Indigo.</p>
             <div className="hero-actions">
-              <a className="button hero-cta" href="#consultation">Безкоштовна консультація <ArrowUpRight size={20} /></a>
+              <a className="button hero-cta" href="#consultation-form">Безкоштовна консультація <ArrowUpRight size={20} /></a>
               <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={18} /></a>
             </div>
             <div className="intro-facts" role="group" aria-label="Освітні можливості">
@@ -528,16 +569,14 @@ export default function Home() {
           </div>
           <div className="hero-visual">
             <div className="hero-art" aria-hidden="true">
-              {(Object.keys(countries) as Country[]).map((id) => (
-                <img key={id} data-active={id === country}
-                  src={basePath + "/images/" + countries[id].image.replace(".jpg", "-1200.webp")}
-                  srcSet={[800, 1200, 1600].map((width) =>
-                    `${basePath}/images/${countries[id].image.replace(".jpg", `-${width}.webp`)} ${width}w`
-                  ).join(", ")}
-                  sizes="(max-width: 760px) 100vw, 48vw"
-                  alt="" width="1600" height={id === "at" ? 1241 : 1200}
-                  fetchPriority={id === country ? "high" : "low"} decoding="async" />
-              ))}
+              <img key={country} data-active="true"
+                src={basePath + "/images/" + info.image.replace(".jpg", "-800.webp")}
+                srcSet={[480, 800, 1200, 1600].map((width) =>
+                  `${basePath}/images/${info.image.replace(".jpg", `-${width}.webp`)} ${width}w`
+                ).join(", ")}
+                sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1392px) 44vw, 580px"
+                alt="" width="1600" height={country === "at" ? 1241 : 1200}
+                fetchPriority="high" decoding="async" />
             </div>
             <div className="hero-country-choice"><CountrySwitch country={country} onChange={(value) => choose(value)} scene /></div>
             <div className="hero-location"><MapPin size={17} /><span>{info.city}</span></div>
@@ -560,6 +599,10 @@ export default function Home() {
               <button type="button" key={id} className="destination-option" aria-pressed={country === id}
                 onClick={() => choose(id, true)} aria-label={`Обрати напрям: ${countries[id].name}`}>
                 <img src={basePath + "/images/" + countries[id].image.replace(".jpg", "-800.webp")}
+                  srcSet={[480, 800, 1200].map((width) =>
+                    `${basePath}/images/${countries[id].image.replace(".jpg", `-${width}.webp`)} ${width}w`
+                  ).join(", ")}
+                  sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), 44vw"
                   alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
                 <span className="option-content">
                   <span className="option-meta"><span>0{index + 1} / {countries[id].local}</span><span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
@@ -628,15 +671,18 @@ export default function Home() {
               <div className="university-content">
                 <ul id="university-list">
                   {universities.slice(0, allUniversities ? undefined : 3).map((university, index) => (
-                    <li key={university.name}>
-                      <div className="university-image"><img src={basePath + "/images/" + campusImages[index]} alt={"Архітектурна ілюстрація: " + university.name} width="1440" height="810" loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / VIENNA</span></div>
+                    <li key={university.name} tabIndex={-1}>
+                      <div className="university-image"><img src={basePath + "/images/" + campusImages[index].replace(".webp", "-800.webp")}
+                        srcSet={[480, 800, 1440].map((width) => `${basePath}/images/${campusImages[index].replace(".webp", `-${width}.webp`)} ${width}w`).join(", ")}
+                        sizes="(max-width: 400px) 22vw, (max-width: 760px) 88px, (max-width: 900px) 44vw, (max-width: 1392px) 29vw, 412px"
+                        alt={"Архітектурна ілюстрація: " + university.name} width="1440" height="810" loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / VIENNA</span></div>
                       <div><h4>{university.name}</h4><p className="university-category">{university.category}</p></div>
                       <p>{university.description}</p>
                       <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Офіційний вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
                     </li>
                   ))}
                 </ul>
-                <button type="button" className="university-toggle" aria-expanded={allUniversities} aria-controls="university-list" onClick={() => setAllUniversities(!allUniversities)}>
+                <button ref={universityToggle} type="button" className="university-toggle" aria-expanded={allUniversities} aria-controls="university-list" onClick={toggleUniversities}>
                   {allUniversities ? "Згорнути добірку" : "Переглянути всі 10 університетів"}<ChevronDown size={18} style={{ transform: allUniversities ? "rotate(180deg)" : undefined }} />
                 </button>
               </div>
@@ -667,7 +713,7 @@ export default function Home() {
                   Переклади та засвідчення документів, подання заяв, мовні
                   іспити чи підготовка, дорога та депозит за житло.
                 </p>
-                <a href="#consultation" className="text-link">
+                <a href="#consultation-form" className="text-link">
                   Обговорити свою ситуацію
                   <ArrowUpRight size={16} />
                 </a>
@@ -706,7 +752,7 @@ export default function Home() {
               <br />
               Це теж хороша точка для першої розмови.
             </p>
-            <a className="button" href="#consultation">
+            <a className="button" href="#consultation-form">
               Безкоштовна консультація
               <ArrowUpRight size={18} />
             </a>
@@ -830,6 +876,7 @@ export default function Home() {
           </details>
         </div>
       </footer>
+      <MobileShortcuts />
     </>
   );
 }
