@@ -22,7 +22,7 @@ body { background: var(--background); }
 .header nav { font-size: .875rem; gap: 28px; }
 .mobile-menu { display: none; }
 .button { border-radius: 8px; font-weight: 500; }
-.header-cta { min-width: 0; border-radius: 9px; background: transparent; border: 1px solid #b7a9ce; color: var(--indigo); }
+.header-cta { min-width: 0; min-height: 44px; border-radius: 9px; background: transparent; border: 1px solid #b7a9ce; color: var(--indigo); }
 .header-cta > span { min-width: 0; overflow-wrap: anywhere; }
 .header-cta:hover { background: #eeebf3; }
 .hero-layout {
