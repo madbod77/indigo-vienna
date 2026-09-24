@@ -11,11 +11,13 @@ import {
   Check,
   ChevronDown,
   Copy,
+  Menu,
   Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { basePath } from "@/site.config";
 import { countries, type Country, type Source } from "./admissions";
+import { universities } from "./universities";
 
 function readCountry(): Country {
   return new URLSearchParams(window.location.search).get("country") === "de"
@@ -389,6 +391,15 @@ export default function Home() {
   const [country, setCountry] = useState<Country>(readCountry);
   const [allQuestions, setAllQuestions] = useState(false);
   const info = countries[country];
+  useLayoutEffect(() => {
+    // A fresh document can resolve its fragment before React has created the section.
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (!target) return;
+    const frame = requestAnimationFrame(() =>
+      target.scrollIntoView({ behavior: "instant" }),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, []);
   useEffect(() => {
     const sync = () => {
       setCountry(readCountry());
@@ -420,15 +431,31 @@ export default function Home() {
         <Brand />
         <nav aria-label="Головна навігація">
           <a href="#directions">Напрями</a>
+          <a href="#guide">Вступ</a>
           <a href="#steps">Як вступити</a>
           <a href="#faq">Питання</a>
         </nav>
+        <details className="mobile-menu">
+          <summary>Меню <Menu size={18} /></summary>
+          <nav aria-label="Мобільна навігація" onClick={(event) => {
+            if ((event.target as HTMLElement).closest("a"))
+              event.currentTarget.closest("details")?.removeAttribute("open");
+          }}>
+            <a href="#directions">Напрями</a>
+            <a href="#guide">Умови вступу</a>
+            <a href="#budget">Бюджет</a>
+            <a href="#steps">Як вступити</a>
+            <a href="#faq">Питання</a>
+            <a href="#consultation">Консультація</a>
+          </nav>
+        </details>
         <a className="button header-cta" href="#consultation">
-          Безкоштовна консультація <ArrowUpRight size={17} />
+          <span><span className="header-cta-prefix">Безкоштовна </span>консультація</span> <ArrowUpRight size={17} />
         </a>
       </header>
       <main id="main">
-        <section className="hero wrap" aria-labelledby="hero-title">
+        <div className="hero-layout wrap">
+        <section className="hero" aria-labelledby="hero-title">
           <p className="eyebrow">Вступ до Австрії та Німеччини</p>
           <h1 id="hero-title">
             Ваша освіта.
@@ -439,9 +466,16 @@ export default function Home() {
             Від першого «куди?» до ясного плану вступу.
             <br /> Знайдіть свій напрям разом з Indigo.
           </p>
+          <div className="hero-actions">
           <a className="button hero-cta" href="#consultation">
             Безкоштовна консультація <ArrowUpRight size={18} />
           </a>
+          <a className="hero-secondary" href="#guide">Дізнатися про вступ <ArrowRight size={17} /></a>
+          </div>
+          <div className="hero-note">
+            <span className="note-mark" aria-hidden="true">↗</span>
+            <p>Дві країни. Безліч можливостей.<br /><span>Один наступний крок — ваш.</span></p>
+          </div>
         </section>
         <section
           className="destination-stage"
@@ -473,18 +507,20 @@ export default function Home() {
           </div>
           <div className="destination-caption">
             <div>
-              <p className="destination-kicker">ВАШ НАПРЯМ</p>
+              <p className="destination-kicker">ВАШ НАПРЯМ · {info.local}</p>
               <h2>
                 {info.name}
                 <span>.</span>
               </h2>
               <p className="destination-location">{info.city}</p>
+              <p className="destination-description">{info.caption}</p>
             </div>
             <a className="scene-link" href="#guide">
               Про вступ <ArrowUpRight size={21} />
             </a>
           </div>
         </section>
+        </div>
         <div
           className="intro-facts wrap"
           role="group"
@@ -494,6 +530,15 @@ export default function Home() {
           <span>Магістратура</span>
           <span>Підготовчі програми</span>
         </div>
+        <div className="guide-index wrap">
+          <span>Ваш довідник <ArrowRight size={16} /></span>
+          <nav aria-label="Розділи довідника">
+            <a href="#guide"><span>01</span> Вступ</a>
+            <a href="#budget"><span>02</span> Бюджет</a>
+            <a href="#steps"><span>03</span> Кроки</a>
+            <a href="#faq"><span>04</span> Питання</a>
+          </nav>
+        </div>
         <section
           className="section wrap guide"
           id="guide"
@@ -501,7 +546,7 @@ export default function Home() {
         >
           <div className="guide-head">
             <div className="section-heading">
-              <p className="eyebrow">МОЖЛИВОСТІ ТА ВИМОГИ</p>
+              <p className="eyebrow"><span className="section-index">01</span> МОЖЛИВОСТІ ТА ВИМОГИ</p>
               <h2 id="guide-title">{info.title}</h2>
             </div>
             <CountrySwitch
@@ -511,9 +556,9 @@ export default function Home() {
           </div>
           <p className="lead">{info.intro}</p>
           <div className="path-grid">
-            {info.paths.map((path) => (
+            {info.paths.map((path, index) => (
               <article key={path.title}>
-                <h3>{path.title}</h3>
+                <h3><span className="path-number">0{index + 1}</span>{path.title}</h3>
                 <div className="path-description">
                   <p>{path.text}</p>
                   <SourceLink source={path.source} />
@@ -533,11 +578,31 @@ export default function Home() {
               <ArrowUpRight size={17} />
             </a>
           </div>
+          {country === "at" && (
+            <details className="universities" id="universities">
+              <summary>
+                <span>Університети Відня</span>
+                <span className="university-count">10 закладів <Plus size={19} /></span>
+              </summary>
+              <div className="university-content">
+                <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад.</p>
+                <ul>
+                  {universities.map((university) => (
+                    <li key={university.name}>
+                      <div><h3>{university.name}</h3><p className="university-category">{university.category}</p></div>
+                      <p>{university.description}</p>
+                      <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Офіційний вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          )}
         </section>
-        <section className="budget" aria-labelledby="budget-title">
+        <section className="budget" id="budget" aria-labelledby="budget-title">
           <div className="wrap">
             <div className="section-heading">
-              <p className="eyebrow">{info.name.toUpperCase()} · ФІНАНСИ</p>
+              <p className="eyebrow"><span className="section-index">02</span> {info.name.toUpperCase()} · ФІНАНСИ</p>
               <h2 id="budget-title">Великі плани. Ясний бюджет.</h2>
             </div>
             <div className="budget-grid">
@@ -577,6 +642,7 @@ export default function Home() {
         >
           <div className="section-heading">
             <p className="eyebrow">
+              <span className="section-index">03</span>
               {info.name.toUpperCase()} · ШЛЯХ ДО НАВЧАННЯ
             </p>
             <h2 id="steps-title">Вступ стає зрозумілим.</h2>
@@ -609,6 +675,7 @@ export default function Home() {
         >
           <div className="faq-heading">
             <p className="eyebrow">
+              <span className="section-index">04</span>
               {info.name.toUpperCase()} · ПИТАННЯ Й ВІДПОВІДІ
             </p>
             <h2 id="faq-title">
