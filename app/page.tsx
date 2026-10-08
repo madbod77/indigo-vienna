@@ -29,6 +29,13 @@ const campusImages = [
   "06-mdw.webp", "07-die-angewandte.webp", "09-fh-technikum-wien.webp", "10-fhwien-der-wkw.webp",
 ];
 
+function campusImageSizes(university: CampusUniversity) {
+  // object-fit: cover needs pixels for the full image, including the cropped sides.
+  const mobileScale = Math.max(1, university.imageWidth / university.imageHeight);
+  const desktopScale = Math.max(1, mobileScale / 1.6);
+  return `(max-width: 400px) ${22 * mobileScale}vw, (max-width: 760px) ${88 * mobileScale}px, (max-width: 900px) ${44 * desktopScale}vw, (max-width: 1392px) ${29 * desktopScale}vw, ${Math.ceil(412 * desktopScale)}px`;
+}
+
 function readCountry(): Country {
   const value = new URLSearchParams(window.location.search).get("country");
   return value === "de" || value === "nl" ? value : "at";
@@ -675,7 +682,7 @@ export default function Home() {
                     <li key={university.name} tabIndex={-1}>
                       <div className="university-image"><img src={`${basePath}/images/${university.image}-800.webp`}
                         srcSet={university.imageWidths.map((width) => `${basePath}/images/${university.image}-${width}.webp ${width}w`).join(", ")}
-                        sizes="(max-width: 400px) 22vw, (max-width: 760px) 88px, (max-width: 900px) 44vw, (max-width: 1392px) 29vw, 412px"
+                        sizes={campusImageSizes(university)}
                         alt={university.imageAlt} width={university.imageWidth} height={university.imageHeight} loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / {country === "de" ? university.city.toUpperCase() : "VIENNA"}</span></div>
                       <div><h4>{university.name}</h4><p className="university-category">{country === "de" ? university.city + " · " : ""}{university.category}</p></div>
                       <p>{university.description}</p>
