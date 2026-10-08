@@ -21,6 +21,7 @@ import {
 import { basePath } from "@/site.config";
 import { countries, type Country, type Source } from "./admissions";
 import { universities } from "./universities";
+import { germanUniversities, type CampusUniversity } from "./germany-universities";
 
 const campusImages = [
   "01-universitaet-wien.webp", "wu-trimmed-23-25-terminal.webp", "02-tu-wien.webp",
@@ -105,7 +106,7 @@ function MobileMenu({ country }: { country: Country }) {
         <p className="menu-context">Довідник: {countries[country].name}</p>
         <a href="#directions">Напрями</a>
         <a href="#guide">Умови вступу</a>
-        {country === "at" && <a href="#universities">Університети</a>}
+        {country !== "nl" && <a href="#universities">Університети</a>}
         <a href="#budget">Бюджет</a>
         <a href="#steps">Як вступити</a>
         <a href="#faq">Питання</a>
@@ -458,6 +459,15 @@ export default function Home() {
   const [allUniversities, setAllUniversities] = useState(false);
   const universityToggle = useRef<HTMLButtonElement>(null);
   const info = countries[country];
+  const activeUniversities: CampusUniversity[] = country === "de" ? germanUniversities : universities.map((university, index) => ({
+    ...university,
+    city: "Відень",
+    image: campusImages[index].replace(".webp", ""),
+    imageWidths: [480, 800, 1440],
+    imageWidth: 1440,
+    imageHeight: 810,
+    imageAlt: "Архітектурна ілюстрація: " + university.name,
+  }));
   function toggleUniversities() {
     const expanding = !allUniversities;
     setAllUniversities(expanding);
@@ -504,6 +514,7 @@ export default function Home() {
     const sync = () => {
       setCountry(readCountry());
       setAllQuestions(false);
+      setAllUniversities(false);
     };
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
@@ -513,6 +524,7 @@ export default function Home() {
     if (changed) {
       setCountry(value);
       setAllQuestions(false);
+      setAllUniversities(false);
     }
     const url = new URL(window.location.href);
     url.searchParams.delete("film");
@@ -653,26 +665,26 @@ export default function Home() {
               <ArrowUpRight size={17} />
             </a>
           </div>
-          {country === "at" && (
-            <section className="universities" id="universities" aria-labelledby="universities-title">
-              <div className="universities-heading"><div><p className="eyebrow">МІСТО, У ЯКОМУ НАВЧАЮТЬСЯ</p><h3 id="universities-title">Знайомтесь: університети Відня</h3></div><span className="university-count">10 закладів</span></div>
-              <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад. Зображення кампусів — візуальні ілюстрації.</p>
+          {country !== "nl" && (
+            <section key={country} className="universities" id="universities" aria-labelledby="universities-title">
+              <div className="universities-heading"><div><p className="eyebrow">{country === "de" ? "РІЗНІ МІСТА. ВАШ НАПРЯМ." : "МІСТО, У ЯКОМУ НАВЧАЮТЬСЯ"}</p><h3 id="universities-title">Знайомтесь: університети {country === "de" ? "Німеччини" : "Відня"}</h3></div><span className="university-count">{activeUniversities.length} закладів</span></div>
+              <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад. {country === "de" ? "На фото — кампуси університетів; автори й ліцензії вказані внизу сторінки." : "Зображення кампусів — візуальні ілюстрації."}</p>
               <div className="university-content">
                 <ul id="university-list">
-                  {universities.slice(0, allUniversities ? undefined : 3).map((university, index) => (
+                  {activeUniversities.slice(0, allUniversities ? undefined : 3).map((university, index) => (
                     <li key={university.name} tabIndex={-1}>
-                      <div className="university-image"><img src={basePath + "/images/" + campusImages[index].replace(".webp", "-800.webp")}
-                        srcSet={[480, 800, 1440].map((width) => `${basePath}/images/${campusImages[index].replace(".webp", `-${width}.webp`)} ${width}w`).join(", ")}
+                      <div className="university-image"><img src={`${basePath}/images/${university.image}-800.webp`}
+                        srcSet={university.imageWidths.map((width) => `${basePath}/images/${university.image}-${width}.webp ${width}w`).join(", ")}
                         sizes="(max-width: 400px) 22vw, (max-width: 760px) 88px, (max-width: 900px) 44vw, (max-width: 1392px) 29vw, 412px"
-                        alt={"Архітектурна ілюстрація: " + university.name} width="1440" height="810" loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / VIENNA</span></div>
-                      <div><h4>{university.name}</h4><p className="university-category">{university.category}</p></div>
+                        alt={university.imageAlt} width={university.imageWidth} height={university.imageHeight} loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / {country === "de" ? university.city.toUpperCase() : "VIENNA"}</span></div>
+                      <div><h4>{university.name}</h4><p className="university-category">{country === "de" ? university.city + " · " : ""}{university.category}</p></div>
                       <p>{university.description}</p>
                       <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Офіційний вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
                     </li>
                   ))}
                 </ul>
                 <button ref={universityToggle} type="button" className="university-toggle" aria-expanded={allUniversities} aria-controls="university-list" onClick={toggleUniversities}>
-                  {allUniversities ? "Згорнути добірку" : "Переглянути всі 10 університетів"}<ChevronDown size={18} style={{ transform: allUniversities ? "rotate(180deg)" : undefined }} />
+                  {allUniversities ? "Згорнути добірку" : `Переглянути всі ${activeUniversities.length} університетів`}<ChevronDown size={18} style={{ transform: allUniversities ? "rotate(180deg)" : undefined }} />
                 </button>
               </div>
             </section>
@@ -869,6 +881,13 @@ export default function Home() {
               <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a>
               . Зменшено, перетворено на WebP, кадровано у відображенні.
             </p>
+            {germanUniversities.map((university) => university.photo && (
+              <p key={university.name}>
+                <a href={university.photo.source} target="_blank" rel="noreferrer">{university.name}: {university.photo.author} / Wikimedia Commons</a>{" "}·{" "}
+                <a href={university.photo.licenseUrl} target="_blank" rel="noreferrer">{university.photo.license}</a>
+                . Зменшено, перетворено на WebP, кадровано у відображенні.
+              </p>
+            ))}
           </details>
         </div>
       </footer>

@@ -92,7 +92,7 @@ h1 span { font-family:Georgia,"Times New Roman",serif; font-style:italic; font-s
 .university-content li:focus-visible { outline:3px solid #9e85dd; outline-offset:4px; }
 .university-content li { display:flex; flex-direction:column; min-width:0; border-radius:16px; border:1px solid var(--border); background:#fff; overflow:hidden; padding-bottom:18px; }
 .university-image { position:relative; aspect-ratio:16/10; background:#dedce5; }
-.university-image img { width:100%; height:100%; object-fit:cover; }
+.university-image img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .university-number { position:absolute; top:14px; left:14px; color:#43334e; background:#fff; border-radius:99px; padding:6px 10px; font-size:.5625rem; letter-spacing:.08em; }
 .university-content li > div:not(.university-image) { padding:22px 24px 0; }
 .university-content h4 { font-size:1.2rem; font-weight:650; letter-spacing:-.035em; line-height:1.4; }
