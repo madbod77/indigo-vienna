@@ -29,9 +29,8 @@ const campusImages = [
 ];
 
 function readCountry(): Country {
-  return new URLSearchParams(window.location.search).get("country") === "de"
-    ? "de"
-    : "at";
+  const value = new URLSearchParams(window.location.search).get("country");
+  return value === "de" || value === "nl" ? value : "at";
 }
 function SourceLink({ source }: { source: Source }) {
   return (
@@ -253,6 +252,7 @@ function Consultation({ country }: { country: Country }) {
                   >
                     <option>Австрія</option>
                     <option>Німеччина</option>
+                    <option>Нідерланди</option>
                     <option>Ще обираю</option>
                   </select>
                 </div>
@@ -371,66 +371,64 @@ function CountrySwitch({
   scene?: boolean;
 }) {
   const indicator = useRef<HTMLSpanElement>(null);
-  const spring = useRef({ value: country === "de" ? 1 : 0, velocity: 0 });
+  const spring = useRef({ x: 0, y: 0, vx: 0, vy: 0 });
   useLayoutEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const target = country === "de" ? 1 : 0;
+    const target = { x: 0, y: 0 };
     let frame = 0;
     let last = 0;
-    const geometry = { x: 0, y: 0 };
     const container = indicator.current?.parentElement;
     if (!container) return;
     const paint = () => {
       if (indicator.current)
-        indicator.current.style.transform = `translate(${geometry.x * spring.current.value}px, ${geometry.y * spring.current.value}px)`;
+        indicator.current.style.transform = `translate(${spring.current.x}px, ${spring.current.y}px)`;
     };
     const measure = () => {
-      const buttons = container.querySelectorAll("button");
-      if (!indicator.current || buttons.length !== 2) return;
-      geometry.x = buttons[1].offsetLeft - buttons[0].offsetLeft;
-      geometry.y = buttons[1].offsetTop - buttons[0].offsetTop;
+      const button = container.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+      if (!indicator.current || !button) return;
+      target.x = button.offsetLeft;
+      target.y = button.offsetTop;
       Object.assign(indicator.current.style, {
-        left: `${buttons[0].offsetLeft}px`,
-        top: `${buttons[0].offsetTop}px`,
-        width: `${buttons[0].offsetWidth}px`,
-        height: `${buttons[0].offsetHeight}px`,
+        left: "0px",
+        top: "0px",
+        width: `${button.offsetWidth}px`,
+        height: `${button.offsetHeight}px`,
         bottom: "auto",
       });
-      paint();
+      start();
     };
-    measure();
     const resize = new ResizeObserver(measure);
     resize.observe(container);
     function step(now: number) {
       const dt = last ? Math.min((now - last) / 1000, 0.032) : 1 / 60;
       last = now;
       const state = spring.current;
-      const acceleration = 300 * (target - state.value) - 35 * state.velocity;
-      state.velocity += acceleration * dt;
-      state.value += state.velocity * dt;
+      state.vx += (300 * (target.x - state.x) - 35 * state.vx) * dt;
+      state.vy += (300 * (target.y - state.y) - 35 * state.vy) * dt;
+      state.x += state.vx * dt;
+      state.y += state.vy * dt;
       paint();
       if (
-        Math.abs(target - state.value) > 0.0005 ||
-        Math.abs(state.velocity) > 0.001
+        Math.abs(target.x - state.x) > 0.05 || Math.abs(target.y - state.y) > 0.05 ||
+        Math.abs(state.vx) > 0.1 || Math.abs(state.vy) > 0.1
       )
         frame = requestAnimationFrame(step);
       else {
-        state.value = target;
-        state.velocity = 0;
+        Object.assign(state, target, { vx: 0, vy: 0 });
         paint();
       }
     }
     function start() {
       cancelAnimationFrame(frame);
       if (media.matches) {
-        spring.current = { value: target, velocity: 0 };
+        spring.current = { ...target, vx: 0, vy: 0 };
         paint();
       } else {
         last = 0;
         frame = requestAnimationFrame(step);
       }
     }
-    start();
+    measure();
     media.addEventListener("change", start);
     return () => {
       cancelAnimationFrame(frame);
@@ -445,20 +443,11 @@ function CountrySwitch({
       aria-label="Оберіть країну навчання"
     >
       <span className="switch-indicator" aria-hidden="true" ref={indicator} />
-      <button
-        type="button"
-        aria-pressed={country === "at"}
-        onClick={() => onChange("at")}
-      >
-        Австрія
-      </button>
-      <button
-        type="button"
-        aria-pressed={country === "de"}
-        onClick={() => onChange("de")}
-      >
-        Німеччина
-      </button>
+      {(Object.keys(countries) as Country[]).map((id) => (
+        <button key={id} type="button" aria-pressed={country === id} onClick={() => onChange(id)}>
+          {countries[id].name}
+        </button>
+      ))}
     </div>
   );
 }
@@ -556,7 +545,7 @@ export default function Home() {
       <main id="main" tabIndex={-1}>
         <section className="hero-experience wrap" aria-labelledby="hero-title">
           <div className="hero">
-            <p className="eyebrow"><span className="hero-dot" /> ВСТУП ДО АВСТРІЇ ТА НІМЕЧЧИНИ</p>
+            <p className="eyebrow"><span className="hero-dot" /> АВСТРІЯ · НІМЕЧЧИНА · НІДЕРЛАНДИ</p>
             <h1 id="hero-title">Ваша освіта.<br /><span>Без кордонів.</span></h1>
             <p className="hero-description">Від першого «куди?» до ясного плану вступу.<br /> Знайдіть свій напрям разом з Indigo.</p>
             <div className="hero-actions">
@@ -571,16 +560,16 @@ export default function Home() {
             <div className="hero-art" aria-hidden="true">
               <img key={country} data-active="true"
                 src={basePath + "/images/" + info.image.replace(".jpg", "-800.webp")}
-                srcSet={[480, 800, 1200, 1600].map((width) =>
+                srcSet={(info.imageWidths ?? [480, 800, 1200, 1600]).map((width) =>
                   `${basePath}/images/${info.image.replace(".jpg", `-${width}.webp`)} ${width}w`
                 ).join(", ")}
                 sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1392px) 44vw, 580px"
-                alt="" width="1600" height={country === "at" ? 1241 : 1200}
+                alt="" width={country === "nl" ? 900 : 1600} height={country === "nl" ? 1195 : country === "at" ? 1241 : 1200}
                 fetchPriority="high" decoding="async" />
             </div>
             <div className="hero-country-choice"><CountrySwitch country={country} onChange={(value) => choose(value)} scene /></div>
             <div className="hero-location"><MapPin size={17} /><span>{info.city}</span></div>
-            <div className="hero-photo-title" aria-hidden="true">{country === "at" ? "Vienna" : "Berlin"}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
+            <div className="hero-photo-title" aria-hidden="true">{{ at: "Vienna", de: "Berlin", nl: "Amsterdam" }[country]}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
           </div>
           <div className="hero-bottom">
             <p><span className="mini-star" aria-hidden="true">✳</span> Великі зміни починаються<br />з одного зрозумілого кроку.</p>
@@ -591,7 +580,7 @@ export default function Home() {
         </section>
         <section className="destinations section wrap" id="directions" aria-labelledby="directions-title">
           <div className="destinations-heading">
-            <div><p className="eyebrow">ДВА НАПРЯМИ. ВАШ ВИБІР.</p><h2 id="directions-title">Два напрями.<br /><em>Безліч можливостей.</em></h2></div>
+            <div><p className="eyebrow">ТРИ НАПРЯМИ. ВАШ ВИБІР.</p><h2 id="directions-title">Три напрями.<br /><em>Безліч можливостей.</em></h2></div>
             <p>Оберіть, де почнеться ваша нова історія.<br />Умови вступу, бюджет і наступні кроки —<br className="desktop-break" /> усе зібрано в одному місці.</p>
           </div>
           <div className="destination-options">
@@ -599,10 +588,10 @@ export default function Home() {
               <button type="button" key={id} className="destination-option" aria-pressed={country === id}
                 onClick={() => choose(id, true)} aria-label={`Обрати напрям: ${countries[id].name}`}>
                 <img src={basePath + "/images/" + countries[id].image.replace(".jpg", "-800.webp")}
-                  srcSet={[480, 800, 1200].map((width) =>
+                  srcSet={(countries[id].imageWidths ?? [480, 800, 1200]).map((width) =>
                     `${basePath}/images/${countries[id].image.replace(".jpg", `-${width}.webp`)} ${width}w`
                   ).join(", ")}
-                  sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), 44vw"
+                  sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), (max-width: 1000px) 44vw, 29vw"
                   alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
                 <span className="option-content">
                   <span className="option-meta"><span>0{index + 1} / {countries[id].local}</span><span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
@@ -720,7 +709,7 @@ export default function Home() {
               </div>
             </div>
             <p className="data-date">
-              Орієнтири перевірено 19 вересня 2026. Остаточні суми й пільги
+              Орієнтири перевірено {country === "nl" ? "8 жовтня 2026" : "19 вересня 2026"}. Остаточні суми й пільги
               звіряйте для свого закладу, набору та статусу.
             </p>
           </div>
@@ -815,7 +804,7 @@ export default function Home() {
       </main>
       <footer className="wrap"><div className="footer-brandline"><span className="footer-wordmark" aria-hidden="true">indigo<span>↗</span></span><p>Освіта без кордонів.<br />Майбутнє з вашим ім’ям.</p></div>
         <div className="footer">
-          <span>Indigo · Австрія та Німеччина</span>
+          <span>Indigo · Австрія · Німеччина · Нідерланди</span>
           <a href="tel:+380506093398">+380 50 609 33 98</a>
           <a
             href="https://www.instagram.com/indigo_education_centre/"
@@ -872,6 +861,13 @@ export default function Home() {
                 CC BY-SA 4.0
               </a>
               . Зменшено, кадровано у відображенні.
+            </p>
+            <p>
+              <a href="https://commons.wikimedia.org/wiki/File:Amsterdam_Canal.png" target="_blank" rel="noreferrer">
+                Амстердам: Supertrouper33 / Wikimedia Commons
+              </a>{" "}·{" "}
+              <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noreferrer">CC0</a>
+              . Зменшено, перетворено на WebP, кадровано у відображенні.
             </p>
           </details>
         </div>

@@ -62,3 +62,7 @@ Manrope by Mikhail Sharanda, Mirko Velimirovic and contributors is distributed u
 
 
 Мобільна оптимізація, 24.09.2026: до наявних фотографій міст додано WebP480; до ілюстрацій кампусів — WebP480/800/1440. Розмір і стиснення змінено локально, авторство та ліцензії вихідних матеріалів збережено. Оригінали лишаються в public/images.
+
+## Amsterdam canal photo, 08.10.2026
+
+Supertrouper33, Wikimedia Commons, CC0 1.0. Source: https://commons.wikimedia.org/wiki/File:Amsterdam_Canal.png ; licence: https://creativecommons.org/publicdomain/zero/1.0/ . Converted PNG900×1195 to JPEG and WebP480/800/900, resized/compressed locally and cropped only by CSS display. No generated imagery. Original author remains credited in the footer.

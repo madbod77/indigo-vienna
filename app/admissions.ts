@@ -1,4 +1,6 @@
-export type Country = "at" | "de";
+import { netherlands } from "./netherlands";
+
+export type Country = "at" | "de" | "nl";
 export type Source = { label: string; url: string };
 export type Answer = { question: string; answer: string; source: Source };
 export type CountryInfo = {
@@ -6,6 +8,7 @@ export type CountryInfo = {
   local: string;
   caption: string;
   image: string;
+  imageWidths?: number[];
   alt: string;
   city: string;
   title: string;
@@ -345,4 +348,5 @@ export const countries: Record<Country, CountryInfo> = {
       },
     ],
   },
+  nl: netherlands,
 };
