@@ -7,7 +7,7 @@
 - Рівно дев’ять закладів у порядку власника: Freie Universität Berlin, Technische Universität München, Universität Hamburg, Universität Leipzig, Technische Universität Dresden, Universität Bonn, Universität Heidelberg, Humboldt-Universität zu Berlin, RWTH Aachen University.
 - `app/germany-universities.ts`: місто, короткі напрями, прямі офіційні посилання вступу й відомості про фото. Перевірено 8 жовтня 2026; це не повторний аудит бюджетів або загальних правил вступу.
 - Такий самий каталог, як для Відня: спершу 3 картки, кнопка відкриває 9. Зміна країни й історія браузера повертають компактний список. Німецькі університети доступні через мобільне меню та `?country=de#universities`.
-- Справжні 9 фото кампусів із Wikimedia Commons, 27 локальних WebP 480/800/1440, lazy loading. Оригінальні фото з повідомлення не були прикріплені. Авторство та ліцензії у футері й `THIRD_PARTY_NOTICES.md`; фото не генерували.
+- Дев’ять точних фото зі списку Соні: сім знайдених оригіналів вищої роздільності та два окремі вкладення Telegram (Humboldt і RWTH). Файли JPEG/WebP збережені без редагування, lazy loading. Відомі автори й джерела у футері та `THIRD_PARTY_NOTICES.md`; фото не генерували. Колишні Commons-ліцензії не присвоєні новим фото.
 - Фіксований формат фото зберігає рівну висоту карток незалежно від пропорцій оригіналів. Австрійські 10 закладів, дані трьох країн і форма збережені.
 
 
@@ -81,3 +81,10 @@ npm run preview
 - Manrope: SIL Open Font License 1.1, `public/fonts/OFL-Manrope.txt`; локальні Cyrillic/Latin variable WOFF2.
 - Амстердам: Supertrouper33 / Wikimedia Commons, CC0. [Оригінал](https://commons.wikimedia.org/wiki/File:Amsterdam_Canal.png). Зменшено, перетворено в JPEG/WebP, кадровано у відображенні; PNG900×1195, похідні480/800/900.
 - Наявні ілюстрації кампусів і брендинг збережено з матеріалів Indigo. Інші повідомлення — `THIRD_PARTY_NOTICES.md`.
+
+
+## University photo replacement, October 2026
+
+All nine owner-selected reference photos replace the German university images in the existing order. Seven higher-resolution source photos were recovered; Humboldt (1000×667) and RWTH (1200×1600) use separate original attachments provided by the owner. Names, descriptions, admission links, layout and country data are unchanged. See THIRD_PARTY_NOTICES.md for photographer/source details and concrete FU use restrictions. Original source JPEG/WebP bytes are preserved.
+
+Перевірка цієї заміни: build, TypeScript та lint пройшли; незалежно звірено порядок, назви, посилання, розміри й SHA256 дев’яти встановлених та локально доступних файлів. Остаточну візуальну перевірку в браузері пропущено за прямою вказівкою власника 11.10.2026. Оригінали разом мають 17,416,824 байти.

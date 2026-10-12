@@ -680,8 +680,8 @@ export default function Home() {
                 <ul id="university-list">
                   {activeUniversities.slice(0, allUniversities ? undefined : 3).map((university, index) => (
                     <li key={university.name} tabIndex={-1}>
-                      <div className="university-image"><img src={`${basePath}/images/${university.image}-800.webp`}
-                        srcSet={university.imageWidths.map((width) => `${basePath}/images/${university.image}-${width}.webp ${width}w`).join(", ")}
+                      <div className="university-image"><img src={`${basePath}/images/${university.imageFile ?? `${university.image}-800.webp`}`}
+                        srcSet={university.imageFile ? undefined : university.imageWidths.map((width) => `${basePath}/images/${university.image}-${width}.webp ${width}w`).join(", ")}
                         sizes={campusImageSizes(university)}
                         alt={university.imageAlt} width={university.imageWidth} height={university.imageHeight} loading="lazy" decoding="async" /><span className="university-number">{String(index + 1).padStart(2, "0")} / {country === "de" ? university.city.toUpperCase() : "VIENNA"}</span></div>
                       <div><h4>{university.name}</h4><p className="university-category">{country === "de" ? university.city + " · " : ""}{university.category}</p></div>
@@ -890,9 +890,9 @@ export default function Home() {
             </p>
             {germanUniversities.map((university) => university.photo && (
               <p key={university.name}>
-                <a href={university.photo.source} target="_blank" rel="noreferrer">{university.name}: {university.photo.author} / Wikimedia Commons</a>{" "}·{" "}
-                <a href={university.photo.licenseUrl} target="_blank" rel="noreferrer">{university.photo.license}</a>
-                . Зменшено, перетворено на WebP, кадровано у відображенні.
+                {university.photo.source ? <a href={university.photo.source} target="_blank" rel="noreferrer">{university.name}: {university.photo.author} / {university.photo.publisher ?? "Wikimedia Commons"}</a> : <>{university.name}: {university.photo.credit}</>}
+                {university.photo.license && university.photo.licenseUrl && <>{" "}·{" "}<a href={university.photo.licenseUrl} target="_blank" rel="noreferrer">{university.photo.license}</a></>}
+                . {university.imageFile ? "Кадровано у відображенні." : "Зменшено, перетворено на WebP, кадровано у відображенні."}
               </p>
             ))}
           </details>

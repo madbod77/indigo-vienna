@@ -5,14 +5,15 @@ export type CampusUniversity = {
   description: string;
   url: string;
   image: string;
+  imageFile?: string;
   imageWidths: number[];
   imageWidth: number;
   imageHeight: number;
   imageAlt: string;
-  photo?: { source: string; author: string; license: string; licenseUrl: string };
+  photo?: { source?: string; author?: string; publisher?: string; credit?: string; license?: string; licenseUrl?: string };
 };
 
-// Nine owner-selected institutions. Official sources and photo licenses checked 2026-10-08.
+// Nine owner-selected institutions. Exact Sonya reference photos recovered 2026-10-11.
 export const germanUniversities: CampusUniversity[] = [
   {
     "name": "Freie Universität Berlin",
@@ -21,20 +22,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Гуманітарні, соціальні та природничі науки",
     "url": "https://www.fu-berlin.de/en/studium/bewerbung/index.html",
     "image": "de-01-freie-universitaet-berlin",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 820,
-    "imageAlt": "Кампус Freie Universität Berlin, Берлін",
+    "imageWidths": [],
+    "imageWidth": 4256,
+    "imageHeight": 2832,
+    "imageAlt": "Філологічна бібліотека Freie Universität Berlin",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Henry-Ford-Bau-Freie-Universitaet-Berlin-Dahlem-10-2018a.jpg",
-      "author": "Gunnar Klack",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
-    }
+      "source": "https://www.fu-berlin.de/en/presse/service/bildarchiv/index.html",
+      "author": "David Ausserhofer",
+      "publisher": "Freie Universität Berlin"
+    },
+    "imageFile": "de-01-freie-universitaet-berlin-reference.jpg"
   },
   {
     "name": "Technische Universität München",
@@ -43,20 +40,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Інженерія, інформатика та природничі науки",
     "url": "https://www.tum.de/en/studies/application",
     "image": "de-02-technische-universitaet-muenchen",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 1072,
-    "imageAlt": "Кампус Technische Universität München, Мюнхен",
+    "imageWidths": [],
+    "imageWidth": 3000,
+    "imageHeight": 2143,
+    "imageAlt": "LABCAMPUS — місце роботи TUM Convergence Center, Мюнхен",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Technische_Universit%C3%A4t_M%C3%BCnchen.jpg",
-      "author": "AuHaidhausen",
-      "license": "CC BY 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
-    }
+      "source": "https://www.kcap.eu/media/uploads/LAB48_LAB52_North.jpg",
+      "author": "Aldo Amoretti",
+      "publisher": "KCAP"
+    },
+    "imageFile": "de-02-technische-universitaet-muenchen-reference.jpg"
   },
   {
     "name": "Universität Hamburg",
@@ -65,20 +58,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Природничі й гуманітарні науки, економіка та право",
     "url": "https://www.uni-hamburg.de/en/campuscenter/bewerbung.html",
     "image": "de-03-universitaet-hamburg",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 900,
-    "imageAlt": "Кампус Universität Hamburg, Гамбург",
+    "imageWidths": [],
+    "imageWidth": 768,
+    "imageHeight": 512,
+    "imageAlt": "Головна будівля Universität Hamburg",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Hauptgeb%C3%A4ude_Uni_Hamburg.jpg",
-      "author": "Uwe Barghaan",
-      "license": "CC BY 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by/3.0"
-    }
+      "source": "https://www.uni-assist.de/fileadmin/_processed_/3/e/csm_uni-hamburg_Julian_Denstorf_9cc5038034.jpg",
+      "author": "Julian Denstorf",
+      "publisher": "uni-assist"
+    },
+    "imageFile": "de-03-universitaet-hamburg-reference.jpg"
   },
   {
     "name": "Universität Leipzig",
@@ -87,20 +76,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Мови, соціальні й природничі науки та медицина",
     "url": "https://www.uni-leipzig.de/en/international/studying-at-leipzig-university/application-and-preparing-to-study",
     "image": "de-04-universitaet-leipzig",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 960,
-    "imageAlt": "Кампус Universität Leipzig, Лейпциг",
+    "imageWidths": [],
+    "imageWidth": 1280,
+    "imageHeight": 854,
+    "imageAlt": "Augusteum і Paulinum Universität Leipzig",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Leipzig_-_Augusteum_%26_Paulinum.jpg",
-      "author": "Fred Romero from Paris, France",
-      "license": "CC BY 2.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
-    }
+      "source": "https://www.wifa.uni-leipzig.de/fileadmin/ul/Fotos/2017_Campus-AP_OO3A3835_UL.jpg",
+      "author": "Swen Reichhold",
+      "publisher": "Universität Leipzig"
+    },
+    "imageFile": "de-04-universitaet-leipzig-reference.jpg"
   },
   {
     "name": "Technische Universität Dresden",
@@ -109,20 +94,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Інженерія, інформатика та природничі науки",
     "url": "https://tu-dresden.de/studium/vor-dem-studium/bewerbung/online-bewerbung?set_language=en",
     "image": "de-05-technische-universitaet-dresden",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 1128,
-    "imageAlt": "Кампус Technische Universität Dresden, Дрезден",
+    "imageWidths": [],
+    "imageWidth": 3000,
+    "imageHeight": 2001,
+    "imageAlt": "Двір Fritz-Foerster-Bau, Technische Universität Dresden",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:20090720060DR_Dresden_Beyerbau_TU_Dresden_George-B%C3%A4hr-Str.jpg",
-      "author": "Jörg Blobelt",
-      "license": "CC BY-SA 4.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
-    }
+      "source": "https://www.jaeger-ausbau.de/highlights/foerster-bau_referenzprojekt_tischlerei-dresden",
+      "author": "Siegfried Michael Wagner",
+      "publisher": "Jaeger"
+    },
+    "imageFile": "de-05-technische-universitaet-dresden-reference.jpg"
   },
   {
     "name": "Universität Bonn",
@@ -131,20 +112,16 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Природничі, гуманітарні та соціальні науки",
     "url": "https://www.uni-bonn.de/en/studying/application-admission-and-enrollment/application-admission-and-enrollment",
     "image": "de-06-universitaet-bonn",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 518,
-    "imageAlt": "Кампус Universität Bonn, Бонн",
+    "imageWidths": [],
+    "imageWidth": 2126,
+    "imageHeight": 1548,
+    "imageAlt": "Головна будівля Universität Bonn у вечірній час",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Universit%C3%A4t_Bonn.jpg",
-      "author": "Thomas Wolf (Der Wolf im Wald)",
-      "license": "CC BY-SA 2.5",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5"
-    }
+      "source": "https://www.uni-bonn.de/en/news/university-of-bonn-improves-further-in-shanghai-ranking",
+      "author": "Volker Lannert",
+      "publisher": "University of Bonn"
+    },
+    "imageFile": "de-06-universitaet-bonn-reference.webp"
   },
   {
     "name": "Universität Heidelberg",
@@ -153,20 +130,18 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Медицина, природничі та гуманітарні науки",
     "url": "https://www.uni-heidelberg.de/en/study/application-enrolment",
     "image": "de-07-universitaet-heidelberg",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 1080,
-    "imageAlt": "Кампус Universität Heidelberg, Гайдельберг",
+    "imageWidths": [],
+    "imageWidth": 2068,
+    "imageHeight": 1680,
+    "imageAlt": "Університетська бібліотека Universität Heidelberg",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Neue_Universit%C3%A4t_Heidelberg.JPG",
-      "author": "4028mdk09",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
-    }
+      "source": "https://commons.wikimedia.org/wiki/File:Heidelberg_Universit%C3%A4tsbibliothek_2003_b.jpg",
+      "author": "Jan Beckendorf; Georgfotoart (експозиція та контраст)",
+      "publisher": "Wikimedia Commons",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0/"
+    },
+    "imageFile": "de-07-universitaet-heidelberg-reference.jpg"
   },
   {
     "name": "Humboldt-Universität zu Berlin",
@@ -175,20 +150,14 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Гуманітарні, соціальні та природничі науки",
     "url": "https://www.studienplatz.hu-berlin.de/bewerbungscheck/index.xhtml",
     "image": "de-08-humboldt-universitaet-berlin",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 720,
-    "imageAlt": "Кампус Humboldt-Universität zu Berlin, Берлін",
+    "imageWidths": [],
+    "imageWidth": 1000,
+    "imageHeight": 667,
+    "imageAlt": "Alte Bibliothek — юридичний факультет Humboldt-Universität zu Berlin на Бебельплац",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:Berlin-Mitte_Humboldt-Uni_05-2014.jpg",
-      "author": "A.Savin",
-      "license": "CC BY-SA 3.0",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
-    }
+      "credit": "Фото надане власником"
+    },
+    "imageFile": "de-08-humboldt-universitaet-berlin-reference.jpg"
   },
   {
     "name": "RWTH Aachen University",
@@ -197,19 +166,13 @@ export const germanUniversities: CampusUniversity[] = [
     "description": "Інженерія, інформатика та природничі науки",
     "url": "https://www.rwth-aachen.de/cms/root/studium/Vor-dem-Studium/~egg/Bewerbung-um-einen-Studienplatz/lidx/1/",
     "image": "de-09-rwth-aachen",
-    "imageWidths": [
-      480,
-      800,
-      1440
-    ],
-    "imageWidth": 1440,
-    "imageHeight": 960,
-    "imageAlt": "Кампус RWTH Aachen University, Аахен",
+    "imageWidths": [],
+    "imageWidth": 1200,
+    "imageHeight": 1600,
+    "imageAlt": "Будівля SuperC, RWTH Aachen University",
     "photo": {
-      "source": "https://commons.wikimedia.org/wiki/File:RWTH_Aachen_Hauptgeb%C3%A4ude.jpg",
-      "author": "א (Aleph)",
-      "license": "CC BY-SA 2.5",
-      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5"
-    }
+      "credit": "Фото надане власником"
+    },
+    "imageFile": "de-09-rwth-aachen-reference.jpg"
   }
 ];
