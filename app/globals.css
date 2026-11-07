@@ -22,7 +22,8 @@ h1,h2,h3,h4 { text-wrap:balance; }
 h1,h2,h3,p,.text-link,.source-link { overflow-wrap:anywhere; }
 h2 { font-size:clamp(2.3rem,4.2vw,3.6rem); font-weight:500; letter-spacing:-.055em; line-height:1.15; }
 h3 { font-size:1.125rem; font-weight:650; line-height:1.4; letter-spacing:-.025em; }
-em { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-style:italic; color:var(--indigo); letter-spacing:-.04em; }
+/* Заголовок у два тони одним шрифтом замість курсивного Georgia-акценту (крок 2) */
+em { font-family:inherit; font-weight:inherit; font-style:normal; color:var(--indigo); letter-spacing:inherit; }
 .wrap { width:calc(100% - 112px); max-width:1280px; margin-inline:auto; }
 .eyebrow { font-size:.6875rem; font-weight:700; letter-spacing:.11em; line-height:1.5; }
 /* Кнопка: стримана «перлинна» глибина, заливка колом з центру, стрілка проходить крізь край і повертається.
