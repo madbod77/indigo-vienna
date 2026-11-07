@@ -1,0 +1,116 @@
+/* Indigo — шліфування «цукерка» поверх editorial.css. Структура й тексти ті самі; рух лише transform/opacity/box-shadow.
+   Патерни звірено з компонентами 21st.dev (hover-lift card, border beam, image zoom, ping badge), реалізація власна. */
+:root { --ease-out:cubic-bezier(.23,1,.32,1); --ease-spring:cubic-bezier(.34,1.56,.64,1); --lift:0 30px 50px -34px rgba(53,38,88,.5); interpolate-size:allow-keywords; }
+::selection { background:#d9cff3; color:#1f1650; }
+
+/* ---------- Шапка ---------- */
+.header nav a { position:relative; transition:color .2s; }
+.header nav a::after { content:""; position:absolute; left:50%; right:50%; bottom:9px; height:1.5px; border-radius:2px; background:var(--indigo); transition:left .4s var(--ease-out),right .4s var(--ease-out); }
+.header nav a:hover::after { left:6px; right:6px; }
+
+/* ---------- Перший екран ---------- */
+.hero { position:relative; isolation:isolate; }
+.hero::before { content:""; position:absolute; z-index:-1; left:-14%; top:-4%; width:82%; aspect-ratio:1.5; border-radius:50%; pointer-events:none;
+  background:radial-gradient(closest-side,rgba(140,115,207,.2),rgba(140,115,207,0)); }
+.hero .eyebrow { width:fit-content; max-width:100%; padding:8px 15px 8px 11px; border:1px solid #e3dcee; border-radius:99px; background:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 #fff,0 8px 20px -14px rgba(66,50,141,.4); }
+.hero-dot { position:relative; box-shadow:none; }
+.hero-dot::after { content:""; position:absolute; inset:-4px; border-radius:50%; border:1.5px solid var(--indigo); opacity:0; animation:indigo-ping 2.6s var(--ease-out) infinite; }
+@keyframes indigo-ping { 0% { transform:scale(.55); opacity:.75; } 75%,100% { transform:scale(2); opacity:0; } }
+.hero-note { display:flex; align-items:center; gap:9px; margin-top:16px; font-size:.8125rem; font-weight:550; color:#5f5672; }
+.hero-note::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--indigo); box-shadow:0 0 0 4px #e7e1f1; flex-shrink:0; }
+.hero-visual { box-shadow:0 44px 80px -50px rgba(42,35,65,.65); }
+.hero-art img[data-active="true"] { animation:indigo-settle 12s var(--ease-out) both; }
+@keyframes indigo-settle { from { transform:scale(1.07); } to { transform:scale(1); } }
+.hero-location { background:rgba(39,33,55,.55); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.hero-bottom a { border-radius:0 14px 14px 0; padding-right:14px; transition:background .35s var(--ease-out),color .2s; }
+.hero-bottom a:hover { background:rgba(255,255,255,.75); }
+.hero-bottom a > svg:last-child { transition:transform .5s var(--ease-spring); }
+.hero-bottom a:hover > svg:last-child { transform:translate(3px,-3px); }
+
+/* ---------- Картки напрямів ---------- */
+.destination-option { transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),border-color .3s; }
+.destination-option > img { transition:transform 1.2s var(--ease-out); }
+.destination-option:hover { transform:translateY(-6px); border-color:#b8aacd; box-shadow:var(--lift); }
+.destination-option:hover > img { transform:scale(1.05); }
+.destination-option[aria-pressed="true"] { border-color:var(--indigo); box-shadow:0 0 0 1px var(--indigo),0 26px 46px -34px rgba(66,50,141,.65); }
+.destination-option:active { transform:translateY(-2px) scale(.99); }
+.option-arrow { transition:background .35s var(--ease-out),color .35s,transform .55s var(--ease-spring); }
+.destination-option:hover .option-arrow,.destination-option[aria-pressed="true"] .option-arrow { background:var(--indigo); color:#fff; }
+.destination-option:hover .option-arrow { transform:rotate(45deg); }
+
+/* ---------- Довідник: маршрути вступу ---------- */
+.guide-index a { position:relative; }
+.path-grid article { background:linear-gradient(180deg,#f4f1f8,#ece8f2); transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),background .4s; }
+.path-grid article:hover { transform:translateY(-4px); background:#fff; box-shadow:var(--lift); }
+.path-number { padding:5px 10px; border-radius:99px; background:#fff; border:1px solid #e3dcee; }
+
+/* ---------- Університети ---------- */
+.university-content li { transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),border-color .3s; }
+.university-content li:hover { transform:translateY(-5px); border-color:#cfc3df; box-shadow:var(--lift); }
+.university-image { overflow:hidden; }
+.university-image img { transition:transform 1.2s var(--ease-out); }
+.university-content li:hover .university-image img { transform:scale(1.05); }
+.university-number { background:rgba(255,255,255,.84); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); box-shadow:0 4px 12px -6px rgba(31,22,80,.35); }
+.university-count { background:#fff; }
+.university-toggle { transition:background .35s var(--ease-out),border-color .35s,color .25s,transform .15s; }
+.university-toggle:hover { background:var(--indigo); border-color:var(--indigo); color:#fff; }
+.university-toggle:active { transform:scale(.99); }
+.university-toggle svg { transition:transform .45s var(--ease-spring); }
+
+/* ---------- Бюджет: світловий промінь по контуру картки ---------- */
+@property --indigo-beam { syntax:"<angle>"; inherits:false; initial-value:0deg; }
+.budget { background:radial-gradient(70% 90% at 88% 0%,#3d3168 0%,rgba(61,49,104,0) 62%),radial-gradient(50% 70% at 0% 100%,#332a55 0%,rgba(51,42,85,0) 70%),#2a2341;
+  box-shadow:0 50px 90px -60px rgba(31,22,80,.75); }
+.living-cost { border:1px solid transparent;
+  background:linear-gradient(#302849,#2d2645) padding-box,
+    conic-gradient(from var(--indigo-beam),rgba(206,192,224,.18) 0deg,#c9b6ff 30deg,rgba(206,192,224,.18) 70deg,rgba(206,192,224,.18) 360deg) border-box;
+  box-shadow:0 30px 60px -40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06); animation:indigo-beam 7s linear infinite; }
+@keyframes indigo-beam { to { --indigo-beam:360deg; } }
+.cost-number { background:linear-gradient(180deg,#fff 10%,#cbb6f6 95%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+/* ---------- Кроки ---------- */
+.steps li { position:relative; }
+.steps li::before { content:""; position:absolute; left:0; top:-1px; width:100%; height:2px; border-radius:2px; background:var(--indigo); transform:scaleX(0); transform-origin:left;
+  transition:transform .7s var(--ease-out); }
+.steps li:hover::before { transform:scaleX(1); }
+.step-number { background:linear-gradient(180deg,#a28fc0,#42328d); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.step-number svg { transition:transform .5s var(--ease-spring); }
+.steps li:hover .step-number svg { transform:translateX(5px); color:var(--indigo); }
+.steps-footer { background:linear-gradient(115deg,#efeaf5,#e5ddf1); border:1px solid #ddd2ec; box-shadow:inset 0 1px 0 #fff; }
+
+/* ---------- Питання: плавне розкриття ---------- */
+.faq-list { box-shadow:0 34px 64px -48px rgba(53,38,88,.5); }
+.faq-list summary { cursor:pointer; transition:color .2s; }
+.faq-list summary:hover { color:var(--indigo); }
+.faq-list summary svg { flex-shrink:0; transition:transform .5s var(--ease-spring),background .3s,color .3s; }
+.faq-list summary:hover svg { background:#e5ddf1; }
+.faq-list details[open] summary:hover svg { background:#33267a; }
+.faq-list details::details-content { block-size:0; overflow:clip; transition:block-size .5s var(--ease-out),content-visibility .5s allow-discrete; }
+.faq-list details[open]::details-content { block-size:auto; }
+.more-questions svg { transition:transform .45s var(--ease-spring); }
+
+/* ---------- Заявка ---------- */
+.consultation { background:radial-gradient(60% 90% at 6% 0%,#f3eff9 0%,rgba(243,239,249,0) 62%),radial-gradient(40% 60% at 100% 100%,#e2d8f1 0%,rgba(226,216,241,0) 70%),#eae4f2; }
+.form-panel { box-shadow:0 0 0 1px #e4dbef,0 44px 80px -54px rgba(66,50,141,.6); }
+.form-panel input,.form-panel select,.form-panel textarea { border-radius:12px; transition:border-color .2s,box-shadow .3s var(--ease-out),background .2s; }
+.form-panel input:hover,.form-panel select:hover,.form-panel textarea:hover { border-color:#c9bddb; }
+.form-panel input:focus,.form-panel select:focus,.form-panel textarea:focus { outline:none; border-color:var(--indigo); background:#fff; box-shadow:0 0 0 4px rgba(140,115,207,.22); }
+.consult-topics span:before { background:#fff; border-color:#cdbfe0; box-shadow:0 4px 10px -6px rgba(66,50,141,.4); }
+.contact-alternative a { background:linear-gradient(currentColor,currentColor) 0 100%/0 1.5px no-repeat; transition:background-size .45s var(--ease-out); }
+.contact-alternative a:hover { background-size:100% 1.5px; }
+
+/* ---------- Підвал ---------- */
+.footer-wordmark > span { transition:transform .7s var(--ease-spring); }
+.footer-brandline:hover .footer-wordmark > span { transform:translate(8px,-8px); }
+
+@media (prefers-reduced-motion:reduce) {
+  .hero-dot::after,.hero-art img[data-active="true"],.living-cost { animation:none; }
+  .destination-option,.destination-option > img,.path-grid article,.university-content li,.university-image img,.steps li::before,
+  .faq-list details::details-content,.option-arrow,.hero-bottom a > svg:last-child,.footer-wordmark > span { transition:none; }
+  .destination-option:hover,.path-grid article:hover,.university-content li:hover { transform:none; }
+  .destination-option:hover > img,.university-content li:hover .university-image img { transform:none; }
+}
+
+/* Вузький телефон: назва країни не рветься посеред слова («Нідерланд/и») — менший кегль, прапорець переходить нижче */
+@media (max-width:420px) { .option-name { flex-wrap:wrap; row-gap:6px; font-size:1.75rem; overflow-wrap:normal; word-break:normal; } }

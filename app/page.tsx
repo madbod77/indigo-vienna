@@ -558,7 +558,7 @@ export default function Home() {
         </nav>
         <MobileMenu country={country} />
         <a className="button header-cta" href="#consultation-form">
-          <span><span className="header-cta-prefix">Безкоштовна </span>консультація</span> <ArrowUpRight size={17} />
+          <span>Консультація</span> <ArrowUpRight size={17} />
         </a>
       </header>
       <main id="main" tabIndex={-1}>
@@ -568,9 +568,10 @@ export default function Home() {
             <h1 id="hero-title">Ваша освіта.<br /><span>Без кордонів.</span></h1>
             <p className="hero-description">Від першого «куди?» до ясного плану вступу.<br /> Знайдіть свій напрям разом з Indigo.</p>
             <div className="hero-actions">
-              <a className="button hero-cta" href="#consultation-form">Безкоштовна консультація <ArrowUpRight size={20} /></a>
+              <a className="button hero-cta" href="#consultation-form">Скласти план вступу <ArrowUpRight size={20} /></a>
               <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={18} /></a>
             </div>
+            <p className="hero-note">Перша консультація — безкоштовна</p>
             <div className="intro-facts" role="group" aria-label="Освітні можливості">
               <span>Бакалаврат</span><span>Магістратура</span><span>Підготовчі програми</span>
             </div>
@@ -761,7 +762,7 @@ export default function Home() {
               Це теж хороша точка для першої розмови.
             </p>
             <a className="button" href="#consultation-form">
-              Безкоштовна консультація
+              Почати з розмови
               <ArrowUpRight size={18} />
             </a>
           </div>
