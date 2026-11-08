@@ -568,7 +568,7 @@ export default function Home() {
             <h1 id="hero-title">Ваша освіта.<br /><span>Без кордонів.</span></h1>
             <p className="hero-description">Від першого «куди?» до ясного плану вступу.<br /> Знайдіть свій напрям разом з Indigo.</p>
             <div className="hero-actions">
-              <a className="button hero-cta" href="#consultation-form">Скласти план вступу <ArrowUpRight size={20} /></a>
+              <a className="button hero-cta" href="#consultation-form">Обговорити план вступу <ArrowUpRight size={20} /></a>
               <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={18} /></a>
             </div>
             <p className="hero-note">Консультація безкоштовна</p>
@@ -589,7 +589,7 @@ export default function Home() {
             </div>
             <div className="hero-country-choice"><CountrySwitch country={country} onChange={(value) => choose(value)} scene /></div>
             <div className="hero-location"><MapPin size={17} /><span>{info.city}</span></div>
-            <div className="hero-photo-title" aria-hidden="true">{{ at: "Vienna", de: "Berlin", nl: "Amsterdam" }[country]}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
+            <div key={country} className="hero-photo-title" aria-hidden="true">{{ at: "Vienna", de: "Berlin", nl: "Amsterdam" }[country]}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
           </div>
           <div className="hero-bottom">
             <p><span className="mini-star" aria-hidden="true">✳</span> Великі зміни починаються<br />з одного зрозумілого кроку.</p>
@@ -627,10 +627,10 @@ export default function Home() {
           <div className="wrap guide-index-inner">
             <span className="guide-current"><span className="country-dot" />{info.name}<span className="guide-current-label"> / ваш довідник</span></span>
             <nav aria-label="Розділи довідника">
-              <a href="#guide"><span>01</span> Вступ</a>
-              <a href="#budget"><span>02</span> Бюджет</a>
-              <a href="#steps"><span>03</span> Кроки</a>
-              <a href="#faq"><span>04</span> Питання</a>
+              <a href="#guide">Вступ</a>
+              <a href="#budget">Бюджет</a>
+              <a href="#steps">Кроки</a>
+              <a href="#faq">Питання</a>
             </nav>
           </div>
         </div>
@@ -641,7 +641,7 @@ export default function Home() {
         >
           <div className="guide-head">
             <div className="section-heading">
-              <p className="eyebrow"><span className="section-index">01</span> МОЖЛИВОСТІ ТА ВИМОГИ</p>
+              <p className="eyebrow">МОЖЛИВОСТІ ТА ВИМОГИ</p>
               <h2 id="guide-title">{info.title}</h2>
             </div>
             <CountrySwitch
@@ -701,7 +701,7 @@ export default function Home() {
         <section className="budget" id="budget" aria-labelledby="budget-title">
           <div className="wrap">
             <div className="section-heading">
-              <p className="eyebrow"><span className="section-index">02</span> {info.name.toUpperCase()} · ФІНАНСИ</p>
+              <p className="eyebrow">{info.name.toUpperCase()} · ФІНАНСИ</p>
               <h2 id="budget-title">Великі плани.<br /><em>Ясний бюджет.</em></h2>
             </div>
             <div className="budget-grid">
@@ -741,7 +741,7 @@ export default function Home() {
         >
           <div className="section-heading">
             <p className="eyebrow">
-              <span className="section-index">03</span>
+              
               {info.name.toUpperCase()} · ШЛЯХ ДО НАВЧАННЯ
             </p>
             <h2 id="steps-title">Від «хочу» —<br /><em>до плану дій.</em></h2>
@@ -762,7 +762,7 @@ export default function Home() {
               Це теж хороша точка для першої розмови.
             </p>
             <a className="button" href="#consultation-form">
-              Почати з розмови
+              Поговорити з Indigo
               <ArrowUpRight size={18} />
             </a>
           </div>
@@ -774,7 +774,7 @@ export default function Home() {
         >
           <div className="faq-heading">
             <p className="eyebrow">
-              <span className="section-index">04</span>
+              
               {info.name.toUpperCase()} · ПИТАННЯ Й ВІДПОВІДІ
             </p>
             <h2 id="faq-title">
