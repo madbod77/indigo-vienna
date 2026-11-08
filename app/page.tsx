@@ -570,8 +570,8 @@ export default function Home() {
             <div className="hero-actions">
               <a className="button hero-cta" href="#consultation-form">Обговорити план вступу <ArrowUpRight size={20} /></a>
               <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={18} /></a>
+              <p className="hero-note">Консультація безкоштовна</p>
             </div>
-            <p className="hero-note">Консультація безкоштовна</p>
             <div className="intro-facts" role="group" aria-label="Освітні можливості">
               <span>Бакалаврат</span><span>Магістратура</span><span>Підготовчі програми</span>
             </div>
@@ -613,7 +613,7 @@ export default function Home() {
                   ).join(", ")}
                   sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), (max-width: 1000px) 44vw, 29vw"
                   alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
-                <span className="option-cost" aria-hidden="true">{countries[id].living}<small> на місяць · орієнтир</small></span>
+                <span className="option-cost" aria-hidden="true">{countries[id].living}<small>життя на місяць</small></span>
                 <span className="option-content">
                   <span className="option-meta"><span>0{index + 1} / {countries[id].local}</span><span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
                   <span className="option-name">{countries[id].name}<span className="country-flag" data-country={id} aria-hidden="true" /></span>
