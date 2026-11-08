@@ -215,6 +215,19 @@ function Consultation({ country }: { country: Country }) {
             <span>Вимоги й документи</span>
             <span>Терміни та наступні кроки</span>
           </div>
+          <div className="tg-preview" aria-hidden="true">
+            <div className="tg-head"><span className="tg-ava">I</span><span><b>@Natalia_Indigo</b><small>так виглядатиме ваша заявка</small></span></div>
+            <p className="tg-bubble">
+              Вітаю, Indigo! Хочу записатися на безкоштовну консультацію щодо вступу.
+              <br /><br />
+              Ім’я: <mark>{name.trim() || "…"}</mark>
+              <br />
+              Країна: <mark>{destination}</mark>
+              <br />
+              Мій етап: <mark>{stage || "…"}</mark>
+              {question.trim() ? <><br />Запитання: <mark>{question.trim()}</mark></> : null}
+            </p>
+          </div>
           <p className="contact-alternative">
             Зручніше поговорити?
             <br />
@@ -369,6 +382,53 @@ function Consultation({ country }: { country: Country }) {
     </section>
   );
 }
+/* Стрічка: університети довідника з офіційними сторінками вступу (не рейтинг і не партнери) */
+function UniversityTicker() {
+  const names = [...universities.map((u) => u.name), ...germanUniversities.map((u) => u.name)];
+  const row = (hidden: boolean) => (
+    <ul className="ticker-row" aria-hidden={hidden || undefined}>
+      {names.map((n) => <li key={n}>{n}</li>)}
+    </ul>
+  );
+  return (
+    <section className="ticker" aria-label={`Офіційні сторінки вступу в довіднику: ${names.length} університетів`}>
+      <p className="ticker-label"><b>{names.length}</b> офіційних сторінок вступу в довіднику</p>
+      <div className="ticker-view"><div className="ticker-track">{row(false)}{row(true)}</div></div>
+    </section>
+  );
+}
+
+/* Орієнтир витрат на життя: три країни на одній шкалі (дані й джерела — ті самі поля living/livingSource) */
+function LivingCompare({ country }: { country: Country }) {
+  const parse = (v: string) => {
+    const nums = (v.match(/\d[\d\s\u00a0]*/g) ?? []).map((x) => Number(x.replace(/[\s\u00a0]/g, "")));
+    return { min: nums[0] ?? 0, max: nums[1] ?? nums[0] ?? 0 };
+  };
+  const lo = 800, hi = 1600, pct = (x: number) => ((x - lo) / (hi - lo)) * 100;
+  const ids = Object.keys(countries) as Country[];
+  return (
+    <div className="living-compare">
+      <p className="budget-label">ЖИТТЯ НА МІСЯЦЬ · ТРИ КРАЇНИ</p>
+      <ul>
+        {ids.map((id) => {
+          const r = parse(countries[id].living);
+          return (
+            <li key={id} data-active={id === country || undefined}>
+              <span className="lc-name">{countries[id].name}</span>
+              <span className="lc-track" aria-hidden="true">
+                <span className={r.min === r.max ? "lc-dot" : "lc-bar"} style={{ left: pct(r.min) + "%", width: r.min === r.max ? undefined : pct(r.max) - pct(r.min) + "%" }} />
+              </span>
+              <span className="lc-val">{countries[id].living}</span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="lc-scale" aria-hidden="true"><span>€800</span><span>€1 200</span><span>€1 600</span></div>
+      <p className="lc-sources">Джерела: {ids.map((id, i) => <span key={id}>{i ? " · " : ""}<a href={countries[id].livingSource.url} target="_blank" rel="noreferrer">{countries[id].livingSource.label}</a></span>)}</p>
+    </div>
+  );
+}
+
 function CountrySwitch({
   country,
   onChange,
@@ -590,6 +650,11 @@ export default function Home() {
             <div className="hero-country-choice"><CountrySwitch country={country} onChange={(value) => choose(value)} scene /></div>
             <div className="hero-location"><MapPin size={17} /><span>{info.city}</span></div>
             <div key={country} className="hero-photo-title" aria-hidden="true">{{ at: "Vienna", de: "Berlin", nl: "Amsterdam" }[country]}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
+            <dl key={"facts-" + country} className="hero-facts" aria-label={`${info.name} коротко`}>
+              <div><dt>Життя на місяць</dt><dd>{info.living}</dd></div>
+              <div className="hero-fact-tuition"><dt>Навчання</dt><dd>{info.tuition.replace(/-/g, "\u2011")}</dd></div>
+              <div><dt>{country === "nl" ? "Програми" : "Університети в довіднику"}</dt><dd>{country === "nl" ? "каталог Studyfinder" : activeUniversities.length}</dd></div>
+            </dl>
           </div>
           <div className="hero-bottom">
             <p><span className="mini-star" aria-hidden="true">✳</span> Великі зміни починаються<br />з одного зрозумілого кроку.</p>
@@ -598,6 +663,7 @@ export default function Home() {
             <a href="#steps"><Route size={20} /><span>Ваш наступний крок<small>Від вибору до подання</small></span><ArrowUpRight size={18} /></a>
           </div>
         </section>
+        <UniversityTicker />
         <section className="destinations section wrap" id="directions" aria-labelledby="directions-title">
           <div className="destinations-heading">
             <div><p className="eyebrow">ТРИ НАПРЯМИ. ВАШ ВИБІР.</p><h2 id="directions-title">Три напрями.<br /><em>Безліч можливостей.</em></h2></div>
@@ -729,6 +795,7 @@ export default function Home() {
                 </a>
               </div>
             </div>
+            <LivingCompare country={country} />
             <p className="data-date">
               Орієнтири перевірено {country === "nl" ? "8 жовтня 2026" : "19 вересня 2026"}. Остаточні суми й пільги
               звіряйте для свого закладу, набору та статусу.
