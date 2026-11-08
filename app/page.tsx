@@ -571,7 +571,7 @@ export default function Home() {
               <a className="button hero-cta" href="#consultation-form">Скласти план вступу <ArrowUpRight size={20} /></a>
               <a className="hero-secondary" href="#directions">Обрати напрям <ArrowRight size={18} /></a>
             </div>
-            <p className="hero-note">Перша консультація — безкоштовна</p>
+            <p className="hero-note">Консультація безкоштовна</p>
             <div className="intro-facts" role="group" aria-label="Освітні можливості">
               <span>Бакалаврат</span><span>Магістратура</span><span>Підготовчі програми</span>
             </div>
