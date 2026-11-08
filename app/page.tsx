@@ -17,6 +17,8 @@ import {
   Wallet,
   Route,
   Plus,
+  Pause,
+  Play,
 } from "lucide-react";
 import { basePath } from "@/site.config";
 import { countries, type Country, type Source } from "./admissions";
@@ -384,16 +386,21 @@ function Consultation({ country }: { country: Country }) {
 }
 /* Стрічка: університети довідника з офіційними сторінками вступу (не рейтинг і не партнери) */
 function UniversityTicker() {
-  const names = [...universities.map((u) => u.name), ...germanUniversities.map((u) => u.name)];
+  const [paused, setPaused] = useState(false);
+  const list = [...universities, ...germanUniversities].map((u) => ({ name: u.name, url: u.url }));
   const row = (hidden: boolean) => (
     <ul className="ticker-row" aria-hidden={hidden || undefined}>
-      {names.map((n) => <li key={n}>{n}</li>)}
+      {list.map((u) => (
+        <li key={u.name}><a href={u.url} target="_blank" rel="noreferrer" tabIndex={hidden ? -1 : undefined}>{u.name}</a></li>
+      ))}
     </ul>
   );
   return (
-    <section className="ticker" aria-label={`Офіційні сторінки вступу в довіднику: ${names.length} університетів`}>
-      <p className="ticker-label"><b>{names.length}</b> офіційних сторінок вступу в довіднику</p>
+    <section className="ticker" data-paused={paused || undefined} aria-label={`Офіційні сторінки вступу в довіднику: ${list.length} університетів`}>
+      <p className="ticker-label"><b>{list.length}</b> офіційних сторінок вступу<small>добірка довідника — не партнери й не рейтинг</small></p>
       <div className="ticker-view"><div className="ticker-track">{row(false)}{row(true)}</div></div>
+      <button type="button" className="ticker-pause" aria-pressed={paused} onClick={() => setPaused(!paused)}
+        aria-label={paused ? "Продовжити рух стрічки" : "Зупинити рух стрічки"}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>
     </section>
   );
 }
@@ -424,6 +431,7 @@ function LivingCompare({ country }: { country: Country }) {
         })}
       </ul>
       <div className="lc-scale" aria-hidden="true"><span>€800</span><span>€1 200</span><span>€1 600</span></div>
+      <p className="lc-note">Орієнтири по країні з різних джерел; у великих містах витрати можуть бути вищими.</p>
       <p className="lc-sources">Джерела: {ids.map((id, i) => <span key={id}>{i ? " · " : ""}<a href={countries[id].livingSource.url} target="_blank" rel="noreferrer">{countries[id].livingSource.label}</a></span>)}</p>
     </div>
   );
@@ -651,9 +659,9 @@ export default function Home() {
             <div className="hero-location"><MapPin size={17} /><span>{info.city}</span></div>
             <div key={country} className="hero-photo-title" aria-hidden="true">{{ at: "Vienna", de: "Berlin", nl: "Amsterdam" }[country]}<span>ВАШ НОВИЙ ГОРИЗОНТ</span></div>
             <dl key={"facts-" + country} className="hero-facts" aria-label={`${info.name} коротко`}>
-              <div><dt>Життя на місяць</dt><dd>{info.living}</dd></div>
+              <div className="hf-living"><dt>Життя на місяць · орієнтир по країні</dt><dd>{info.living}</dd></div>
               <div className="hero-fact-tuition"><dt>Навчання</dt><dd>{info.tuition.replace(/-/g, "\u2011")}</dd></div>
-              <div><dt>{country === "nl" ? "Програми" : "Університети в довіднику"}</dt><dd>{country === "nl" ? "каталог Studyfinder" : activeUniversities.length}</dd></div>
+              <div><dt>{country === "nl" ? "Програми" : `${info.name}: у довіднику`}</dt><dd>{country === "nl" ? "Studyfinder" : `${activeUniversities.length} університетів`}</dd></div>
             </dl>
           </div>
           <div className="hero-bottom">
@@ -679,7 +687,7 @@ export default function Home() {
                   ).join(", ")}
                   sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), (max-width: 1000px) 44vw, 29vw"
                   alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
-                <span className="option-cost" aria-hidden="true">{countries[id].living}<small>життя на місяць</small></span>
+                <span className="option-cost" aria-hidden="true">{countries[id].living}<small>життя на місяць · орієнтир</small></span>
                 <span className="option-content">
                   <span className="option-meta"><span>0{index + 1} / {countries[id].local}</span><span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
                   <span className="option-name">{countries[id].name}<span className="country-flag" data-country={id} aria-hidden="true" /></span>
