@@ -613,7 +613,7 @@ export default function Home() {
                   ).join(", ")}
                   sizes="(max-width: 520px) 112px, (max-width: 760px) calc(100vw - 40px), (max-width: 1000px) 44vw, 29vw"
                   alt={countries[id].alt} width="800" height="620" loading="lazy" decoding="async" />
-                <span className="option-cost" aria-hidden="true">{countries[id].living}<small> на місяць</small></span>
+                <span className="option-cost" aria-hidden="true">{countries[id].living}<small> на місяць · орієнтир</small></span>
                 <span className="option-content">
                   <span className="option-meta"><span>0{index + 1} / {countries[id].local}</span><span className="option-selected">{country === id ? <><Check size={13} /> Обрано</> : "Напрям"}</span></span>
                   <span className="option-name">{countries[id].name}<span className="country-flag" data-country={id} aria-hidden="true" /></span>
@@ -742,7 +742,6 @@ export default function Home() {
         >
           <div className="section-heading">
             <p className="eyebrow">
-              
               {info.name.toUpperCase()} · ШЛЯХ ДО НАВЧАННЯ
             </p>
             <h2 id="steps-title">Від «хочу» —<br /><em>до плану дій.</em></h2>
@@ -775,7 +774,6 @@ export default function Home() {
         >
           <div className="faq-heading">
             <p className="eyebrow">
-              
               {info.name.toUpperCase()} · ПИТАННЯ Й ВІДПОВІДІ
             </p>
             <h2 id="faq-title">

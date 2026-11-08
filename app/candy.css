@@ -35,7 +35,7 @@
   letter-spacing:-.01em; box-shadow:0 6px 16px -8px rgba(31,22,80,.45); font-variant-numeric:tabular-nums; }
 .option-cost small { font-size:.6875rem; font-weight:500; color:#5f5672; }
 @media (max-width:520px) { .option-cost { left:8px; top:8px; padding:5px 8px; font-size:.6875rem; flex-direction:column; gap:0; border-radius:12px; } .option-cost small { font-size:.625rem; } }
-/* Тонка лінія прогресу читання під липкою панеллю довідника */
+/* Тонка лінія прогресу читання сторінки під липкою панеллю довідника */
 @supports (animation-timeline:scroll()) {
   .guide-index::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--indigo); transform-origin:left;
     transform:scaleX(0); animation:indigo-progress linear both; animation-timeline:scroll(root); }
@@ -45,7 +45,6 @@
 /* ---------- Довідник ---------- */
 .path-grid article { background:linear-gradient(180deg,#f4f1f8,#ece8f2); transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),background .4s; }
 .path-number { padding:5px 10px; border-radius:99px; background:#fff; border:1px solid #e3dcee; }
-.guide-index a > span { display:none; } /* номери розділів прибрано разом із номерами секцій */
 
 /* ---------- Університети ---------- */
 .university-content li { transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),border-color .3s; }
@@ -131,7 +130,7 @@
 /* ---------- Вузькі телефони ---------- */
 @media (max-width:420px) { .option-name { flex-wrap:nowrap; overflow-wrap:normal; word-break:normal; font-size:clamp(1.3rem,7.2vw,1.75rem); } }
 .country-switch button { overflow-wrap:normal; }
-@media (max-width:360px) { .country-switch button { font-size:.75rem; padding-inline:4px; } }
+@media (max-width:360px) { .guide-head .country-switch button { font-size:.75rem; padding-inline:4px; } }
 
 @media (prefers-reduced-motion:reduce) {
   .hero-art img[data-active="true"],.hero-photo-title { animation:none; }
@@ -141,3 +140,5 @@
   .destination-option:hover > img,.university-content li:hover .university-image img { transform:none; }
 }
 @media (max-width:760px) { .guide-index::after { display:none; } }
+/* Телефон: коли видно нижню панель з «Консультацією», дубль у шапці ховається */
+@media (max-width:760px) { body:has(.mobile-dock:not([hidden])) .header-cta { visibility:hidden; } }

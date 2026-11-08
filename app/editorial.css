@@ -72,11 +72,9 @@ h1 span { color:var(--indigo); }
 .guide-current-label { color:var(--muted-ink); font-size:.6875rem; font-weight:400; }
 .guide-index nav { display:flex; flex-wrap:wrap; gap:28px; }
 .guide-index a { min-width:44px; justify-content:center; display:inline-flex; align-items:center; gap:9px; min-height:44px; font-size:.75rem; color:#5b506d; }
-.guide-index a > span { font-size:.5625rem; color:#72607f; }
 .guide-index a:hover { color:var(--indigo); text-decoration:underline; text-underline-offset:5px; }
 .guide-head { display:flex; align-items:center; justify-content:space-between; gap:40px; }
 .section-heading .eyebrow,.faq-heading .eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:22px; color:#756480; }
-.section-index { display:none; } /* номери секцій прибрано (крок 2) */
 .lead { font-size:1rem; line-height:1.85; color:var(--muted-ink); }
 .guide-intro { max-width:760px; margin-top:26px; }
 .path-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:36px; }
@@ -109,7 +107,6 @@ h1 span { color:var(--indigo); }
 .budget { position:relative; width:calc(100% - 48px); max-width:1440px; margin-inline:auto; border-radius:28px; background:#2a2341; color:#fcfaf5; padding:76px 0; }
 .budget .wrap { width:calc(100% - 112px); max-width:1280px; }
 .budget .eyebrow { color:#c5b5db; }
-.budget .section-index { border-color:#746485; }
 .budget h2 { font-size:clamp(2.5rem,4.2vw,3.7rem); }
 .budget h2 em { color:#d4c6e9; }
 .budget-grid { display:grid; grid-template-columns:1fr 1.3fr; gap:0 65px; margin-top:44px; }
@@ -294,7 +291,6 @@ h1 span { color:var(--indigo); }
   .guide-current-label { display:inline; font-size:.625rem; }
   .guide-index nav { justify-content:space-between; gap:4px 10px; margin-top:3px; }
   .guide-index a { font-size:.8125rem; gap:6px; }
-  .guide-index a > span { display:none; }
   .guide-head { display:block; }
   .section-heading .eyebrow,.faq-heading .eyebrow { font-size:.75rem; gap:9px; margin-bottom:20px; letter-spacing:.075em; }
   .guide-head .country-switch { width:100%; margin-top:28px; }
