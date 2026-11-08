@@ -29,6 +29,18 @@
 .destination-option[aria-pressed="true"] .option-arrow { background:var(--indigo); color:#fff; }
 .option-arrow { transition:background .35s var(--ease-out),color .35s,transform .55s var(--ease-spring); }
 .country-flag { flex-shrink:0; }
+/* Чип на фото: орієнтир витрат на життя з блоку бюджету цієї країни */
+.option-cost { position:absolute; left:16px; top:16px; z-index:1; display:inline-flex; align-items:baseline; gap:6px; padding:7px 12px; border-radius:99px;
+  background:rgba(255,255,255,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); color:var(--ink); font-size:.8125rem; font-weight:700;
+  letter-spacing:-.01em; box-shadow:0 6px 16px -8px rgba(31,22,80,.45); font-variant-numeric:tabular-nums; }
+.option-cost small { font-size:.6875rem; font-weight:500; color:#5f5672; }
+@media (max-width:520px) { .option-cost { left:8px; top:8px; padding:5px 8px; font-size:.6875rem; flex-direction:column; gap:0; border-radius:12px; } .option-cost small { font-size:.625rem; } }
+/* Тонка лінія прогресу читання під липкою панеллю довідника */
+@supports (animation-timeline:scroll()) {
+  .guide-index::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--indigo); transform-origin:left;
+    transform:scaleX(0); animation:indigo-progress linear both; animation-timeline:scroll(root); }
+  @keyframes indigo-progress { to { transform:scaleX(1); } }
+}
 
 /* ---------- Довідник ---------- */
 .path-grid article { background:linear-gradient(180deg,#f4f1f8,#ece8f2); transition:transform .55s var(--ease-out),box-shadow .55s var(--ease-out),background .4s; }
@@ -128,3 +140,4 @@
   .destination-option:hover,.path-grid article:hover,.university-content li:hover,.destination-option:active,.university-content li:active { transform:none; }
   .destination-option:hover > img,.university-content li:hover .university-image img { transform:none; }
 }
+@media (max-width:760px) { .guide-index::after { display:none; } }
