@@ -8,11 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --ssr entry-server.tsx --outDir .ssr --emptyOutDir && node scripts/prerender.mjs dist .ssr",
+    "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "lint": "oxlint app components lib main.tsx entry-server.tsx site.config.ts vite.config.ts",
-    "build:qa": "Q=\"$HOME/Desktop/01_Проєкти/velira-sites/runs/indigo-premium-mobile/site\"; SITE_BASE=/ vite build --outDir \"$Q\" --emptyOutDir && SITE_BASE=/ vite build --ssr entry-server.tsx --outDir .ssr --emptyOutDir && node scripts/prerender.mjs \"$Q\" .ssr",
-    "build:pages": "npm run build && rm -rf docs && cp -R dist docs && touch docs/.nojekyll"
+    "lint": "oxlint app components lib main.tsx site.config.ts vite.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

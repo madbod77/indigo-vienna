@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0913" />
+    <meta name="theme-color" content="#f8f7f3" />
     <meta
       name="description"
       content="Вступ до Австрії, Німеччини та Нідерландів з Indigo: програми, мовні вимоги, документи, бюджет і безкоштовна консультація."
@@ -11,62 +11,9 @@
     <meta name="robots" content="noindex,nofollow" />
     <link rel="icon" href="%BASE_URL%favicon.svg" />
     <title>Indigo — вступ до Австрії, Німеччини та Нідерландів</title>
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="uk_UA" />
-    <meta property="og:site_name" content="Indigo" />
-    <meta property="og:url" content="https://madbod77.github.io/indigo-vienna/" />
-    <meta property="og:title" content="Indigo — вступ до Австрії, Німеччини та Нідерландів" />
-    <meta property="og:description" content="Програми, мовні вимоги, документи, бюджет і безкоштовна консультація щодо вступу з Indigo." />
-    <meta property="og:image" content="https://madbod77.github.io/indigo-vienna/og.jpg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preload" href="%BASE_URL%fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="%BASE_URL%fonts/onest-latin.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" as="image" href="%BASE_URL%images/vienna-opera-portrait-streak.webp" media="(max-width: 760px)" fetchpriority="high" />
-    <link rel="preload" as="image" imagesrcset="%BASE_URL%images/vienna-opera-portrait-480.webp 480w, %BASE_URL%images/vienna-opera-portrait.webp 745w" imagesizes="100vw" media="(max-width: 760px)" fetchpriority="high" />
-    <link rel="preload" as="image" imagesrcset="%BASE_URL%images/vienna-opera-800.webp 800w, %BASE_URL%images/vienna-opera-1200.webp 1200w, %BASE_URL%images/vienna-opera-1600.webp 1600w" imagesizes="100vw" media="(min-width: 761px)" fetchpriority="high" />
-    <script>
-      // Motion state before first paint: hidden starting states exist only when JS runs and motion is allowed.
-      (function () {
-        var d = document.documentElement;
-        d.classList.add('js');
-        var cq = new URLSearchParams(location.search).get('country');
-        if (cq === 'de' || cq === 'nl') d.classList.add('pre-swap');
-        // Chromium only (Safari logs the key as an error): keep the form's submit above the on-screen keyboard.
-        if ('virtualKeyboard' in navigator) { var v = document.querySelector('meta[name=viewport]'); if (v) v.content += ', interactive-widget=resizes-content'; }
-        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        d.classList.add('motion');
-        var q = new URLSearchParams(location.search).get('country');
-        try { if (sessionStorage.getItem('indigo-arrived') || location.hash || (q && q !== 'at')) d.classList.add('revisit'); sessionStorage.setItem('indigo-arrived', '1'); } catch (e) {}
-        // Safety net: if the app never starts, show everything as plain content.
-        setTimeout(function () { if (!window.__indigoReady) d.classList.remove('motion'); }, 6000);
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      // «Прибуття» starts with the first paint (CSS); the sharp photo resolves out of the speed streak once decoded.
-      (function () {
-        var d = document.documentElement;
-        if (!d.classList.contains('motion') || d.classList.contains('revisit')) return;
-        var img = document.querySelector('[data-hero-sharp]');
-        var t0 = performance.now(), readyAt = 0;
-        var done = function () { d.classList.add('arrived'); };
-        var ready = function () {
-          if (readyAt) return;
-          readyAt = performance.now();
-          d.classList.add('hero-ready');
-          setTimeout(done, Math.max(1150 - (readyAt - t0), 460));
-        };
-        ['pointerdown', 'keydown', 'wheel', 'touchmove'].forEach(function (t) { addEventListener(t, function () { ready(); done(); }, { once: true, passive: true }); });
-        if (!img || (img.complete && img.naturalWidth)) return ready();
-        img.addEventListener('load', ready, { once: true });
-        img.addEventListener('error', ready, { once: true });
-        setTimeout(ready, 3000);
-      })();
-    </script>
     <script type="module" src="/main.tsx"></script>
   </body>
 </html>
