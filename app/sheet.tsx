@@ -83,6 +83,13 @@ export function Sheet({
       className={"sheet " + className}
       aria-label={label}
       onCancel={(e) => { e.preventDefault(); close(); }}
+      onClose={() => {
+        // A native close (e.g. a second Esc) must never leave the page locked behind a closed sheet.
+        document.documentElement.classList.remove("sheet-open");
+        ref.current?.classList.remove("is-closing");
+        closing.current = false;
+        if (open) onClose();
+      }}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}
     >
       <div className="sheet-panel">

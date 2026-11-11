@@ -20,6 +20,8 @@ import { Arrival, CountryTabs, order, type TravelIntent } from "./arrival";
 import { Consultation } from "./consultation";
 import { Sheet } from "./sheet";
 
+const cityFile: Record<Country, string> = { at: "vienna-opera", de: "berlin-cathedral", nl: "amsterdam-canal" };
+
 const campusImages = [
   "01-universitaet-wien.webp", "wu-trimmed-23-25-terminal.webp", "02-tu-wien.webp",
   "08-hochschule-campus-wien.webp", "04-meduni-wien.webp", "05-boku.webp",
@@ -144,7 +146,21 @@ function RouteSheet({ open, onClose, country, choose }: { open: boolean; onClose
           </li>
         ))}
       </ul>
-      <nav className="sheet-sections" aria-label="Мобільна навігація" onClick={(e) => { if ((e.target as HTMLElement).closest("a")) onClose(); }}>
+      <nav className="sheet-sections" aria-label="Мобільна навігація" onClick={(e) => {
+        const link = (e.target as HTMLElement).closest("a");
+        if (!link) return;
+        e.preventDefault();
+        const hash = link.getAttribute("href") ?? "";
+        onClose();
+        // jump once the sheet is gone and the page is back at scale 1, otherwise the target is measured scaled
+        window.setTimeout(() => {
+          const target = document.querySelector<HTMLElement>(hash);
+          if (!target) return;
+          history.replaceState(null, "", hash);
+          target.scrollIntoView({ behavior: "instant", block: "start" });
+          (target.matches("#consultation-form") ? target : target.querySelector<HTMLElement>("h2,h3"))?.focus?.({ preventScroll: true });
+        }, 560);
+      }}>
         {sections(country).map((s) => <a key={s.href} href={s.href}>{s.label}</a>)}
       </nav>
       <p className="sheet-contacts">
@@ -186,7 +202,7 @@ function RouteBar({ country, onMenu }: { country: Country; onMenu: () => void })
   return (
     <nav className={"dock" + (visible ? " is-visible" : "") + (flash ? " is-flash" : "")} aria-label="Швидкі переходи" inert={!visible || undefined}>
       <button type="button" className="dock-country" onClick={onMenu} aria-haspopup="dialog">
-        <img className="dock-thumb" src={`${basePath}/images/${info.image.replace(".jpg", "-480.webp")}`} alt="" width="36" height="36" loading="lazy" decoding="async" />
+        <img className="dock-thumb" src={`${basePath}/images/${info.image.replace(".jpg", "-thumb.webp")}`} alt="" width="36" height="36" loading="lazy" decoding="async" />
         <span className="dock-text">
           <span className="dock-small">Ваш вступ до</span>
           <span className="dock-name"><span key={country}>{genitive(country)}</span><ChevronDown size={15} /></span>
@@ -230,9 +246,11 @@ function UniversityTicker() {
       <div className="wrap ticker-head">
         <p className="ticker-label"><b className="num">{list.length}</b><span>офіційних сторінок вступу<small>добірка довідника — не партнери й не рейтинг</small></span></p>
         <button type="button" className="ticker-pause" aria-pressed={paused} onClick={() => setPaused(!paused)}
-          aria-label={paused ? "Продовжити рух стрічки" : "Зупинити рух стрічки"}>{paused ? <Play size={16} /> : <Pause size={16} />}</button>
+          aria-label="Пауза стрічки">{paused ? <Play size={16} /> : <Pause size={16} />}</button>
       </div>
       <div className="ticker-view"
+        onFocus={(e) => { setHeld(true); (e.target as HTMLElement).scrollIntoView({ block: "nearest", inline: "nearest" }); }}
+        onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setHeld(false); }}
         onPointerDown={() => { window.clearTimeout(resume.current); setHeld(true); }}
         onPointerUp={() => { resume.current = window.setTimeout(() => setHeld(false), 2000); }}
         onPointerCancel={() => { resume.current = window.setTimeout(() => setHeld(false), 2000); }}>
@@ -260,7 +278,7 @@ function Departures({ country, choose }: { country: Country; choose: (c: Country
           {order.map((id, i) => (
             <li key={id} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
               <button type="button" className="board-card" aria-pressed={country === id}
-                onClick={() => choose(id, { scroll: true })} aria-label={`Обрати напрям: ${countries[id].name}`}>
+                onClick={() => choose(id, { scroll: true })} aria-label={`${countries[id].name} — дослідити напрям`}>
                 <span className="board-thumb" aria-hidden="true" style={{ "--streak": `url(${basePath}/images/${countries[id].image.replace(".jpg", "-streak.webp")})` } as React.CSSProperties}>
                   <img className="thumb-sharp" src={`${basePath}/images/${countries[id].image.replace(".jpg", "-800.webp")}`}
                     srcSet={`${basePath}/images/${countries[id].image.replace(".jpg", "-480.webp")} 480w, ${basePath}/images/${countries[id].image.replace(".jpg", "-800.webp")} 800w`}
@@ -322,7 +340,7 @@ function UniversityRail({ country, list, expanded, onToggle, toggleRef }: {
             <p className="uni-kicker">{country === "de" ? university.city : "Відень"} · {university.category}</p>
             <h4>{university.name}</h4>
             <p className="uni-text">{university.description}</p>
-            <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Офіційний вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
+            <a href={university.url} className="text-link" target="_blank" rel="noreferrer" aria-label={`Про вступ: ${university.name}`}>Про вступ <ArrowUpRight size={16} /></a>
           </li>
         ))}
       </ul>
@@ -404,7 +422,8 @@ function Steps({ country }: { country: Country }) {
         </div>
         <ol className="stack" ref={list} key={country}>
           {info.steps.map((step, i) => (
-            <li key={step.title} className="stack-card" style={{ "--i": i } as React.CSSProperties}>
+            <li key={step.title} className="stack-card" data-step={i} style={{ "--i": i, "--city-blur": `url(${basePath}/images/${cityFile[country]}-portrait-blur.webp)`, "--city-sharp": `url(${basePath}/images/${cityFile[country]}-portrait-480.webp)` } as React.CSSProperties}>
+              <span className="stack-city" aria-hidden="true" />
               <p className="stack-k">Етап {i + 1} з {info.steps.length}</p>
               <h3>{step.title}</h3>
               <p className="stack-text">{step.text}</p>
@@ -427,6 +446,7 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
   const [mode, setMode] = useState<"details" | "sheet" | "panel">("details");
   const [current, setCurrent] = useState<number | null>(null);
   const [panel, setPanel] = useState(0);
+  const sheetMoved = useRef(false);
   useEffect(() => {
     const phone = window.matchMedia("(max-width: 759px)");
     const wide = window.matchMedia("(min-width: 1100px)");
@@ -482,14 +502,16 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
       </div>
       <Sheet open={mode === "sheet" && item !== null} onClose={() => setCurrent(null)} label="Відповідь" className="answer-sheet">
         {item && current !== null && (
-          <div className="answer" key={current}>
-            <h3>{item.question}</h3>
-            <p>{item.answer}</p>
-            <SourceLink source={item.source} />
+          <div className="answer">
+            <div className="answer-body" key={current}>
+              <h3 tabIndex={-1} ref={(el) => { if (el && sheetMoved.current) { sheetMoved.current = false; el.focus({ preventScroll: true }); } }}>{item.question}</h3>
+              <p>{item.answer}</p>
+              <SourceLink source={item.source} />
+            </div>
             <div className="answer-nav">
-              <button type="button" disabled={current === 0} onClick={() => setCurrent(current - 1)}>← Попереднє</button>
+              <button type="button" disabled={current === 0} onClick={() => { sheetMoved.current = true; setCurrent(current - 1); }}>← Попереднє</button>
               {current < info.faq.length - 1 && (
-                <button type="button" onClick={() => { if (current + 1 >= 6) setAll(true); setCurrent(current + 1); }}>
+                <button type="button" onClick={() => { if (current + 1 >= 6) setAll(true); sheetMoved.current = true; setCurrent(current + 1); }}>
                   Наступне: {info.faq[current + 1].question}
                 </button>
               )}
@@ -501,8 +523,8 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
   );
 }
 
-export default function Home() {
-  const [country, setCountry] = useState<Country>(readCountry);
+export default function Home({ initialCountry }: { initialCountry?: Country } = {}) {
+  const [country, setCountry] = useState<Country>(() => initialCountry ?? readCountry());
   const [allQuestions, setAllQuestions] = useState(false);
   const [allUniversities, setAllUniversities] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -568,16 +590,20 @@ export default function Home() {
         if (kind === "dusk") p = -r.top / Math.max(1, r.height - vh);
         else if (kind === "dawn") p = (vh * 0.9 - r.top) / (vh * 0.9 + r.height * 0.5); // light rises while the band crosses the screen
         else if (kind === "sheet") p = (vh - r.bottom) / (vh * 0.6); // the consultation sheet edge rises over the questions
+        else if (kind === "footer") p = (vh - r.top) / Math.min(r.height, vh * 0.5);
         else p = (vh - r.top) / (r.height + vh * 0.25);
         p = Math.min(1, Math.max(0, p));
         el.style.setProperty("--p", p.toFixed(3));
       }
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(tick); };
+    const showHeader = () => root.classList.remove("header-hidden");
+    header?.addEventListener("focusin", showHeader);
     onScroll(); // first measurement on the next frame, not inside the hydration task
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
+      header?.removeEventListener("focusin", showHeader);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(frame);
@@ -595,7 +621,8 @@ export default function Home() {
 
   useLayoutEffect(() => {
     // A fresh document can resolve its fragment before React has created the section.
-    const target = document.getElementById(window.location.hash.slice(1));
+    const id = window.location.hash.slice(1);
+    const target = id ? document.getElementById(id) : null;
     if (!target) return;
     const frame = requestAnimationFrame(() => target.scrollIntoView({ behavior: "instant" }));
     return () => cancelAnimationFrame(frame);
@@ -617,7 +644,7 @@ export default function Home() {
     const a = anchor.current;
     anchor.current = null;
     if (!a || !a.el.isConnected) return;
-    const delta = a.el.getBoundingClientRect().top - a.top;
+    const delta = a.el.offsetTop - window.scrollY - a.top;
     if (Math.abs(delta) > 1) window.scrollBy(0, delta);
   }, [country]);
 
@@ -628,9 +655,10 @@ export default function Home() {
     if (changed) {
       intent.current = opts.swipe ?? null;
       if (!opts.scroll) {
+        const y = window.scrollY;
         const marks = [...document.querySelectorAll<HTMLElement>("main > section")];
-        const el = marks.find((m) => m.getBoundingClientRect().bottom > 80);
-        if (el && el.id !== "top") anchor.current = { el, top: el.getBoundingClientRect().top };
+        const el = marks.find((m) => m.offsetTop + m.offsetHeight - y > 80);
+        if (el && el.id !== "top") anchor.current = { el, top: el.offsetTop - y };
       }
       startTransition(() => {
         setCountry(value);
@@ -646,7 +674,9 @@ export default function Home() {
       if (changed) window.history.pushState({}, "", url);
       else window.history.replaceState({}, "", url);
     }
-    if (opts.scroll) requestAnimationFrame(() => document.getElementById("guide")?.scrollIntoView({ behavior: "smooth" }));
+    if (opts.scroll) requestAnimationFrame(() => document.getElementById("guide")?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    }));
   }, []);
 
   return (
@@ -665,7 +695,7 @@ export default function Home() {
               <p className="label">Можливості та вимоги</p>
               <h2 id="guide-title" className="h2 sentence">
                 Ваш вступ до{" "}
-                <button type="button" className="sentence-country" onClick={() => setMenu(true)} aria-haspopup="dialog" aria-label={`${info.title}. Змінити країну`}>
+                <button type="button" className="sentence-country" onClick={() => setMenu(true)} aria-haspopup="dialog" aria-label={`${genitive(country)} — змінити країну`}>
                   <span key={country}>{genitive(country)}</span><ChevronDown size={26} />
                 </button>
               </h2>

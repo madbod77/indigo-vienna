@@ -3,10 +3,6 @@ import Home from './app/page';
 import './app/journey.css';
 
 const root = document.getElementById('root')!;
-const country = new URLSearchParams(window.location.search).get('country');
-// The HTML is prerendered for Austria (the default). Other countries render on the client.
-if (root.hasChildNodes() && country !== 'de' && country !== 'nl') hydrateRoot(root, <Home />);
-else {
-  root.textContent = '';
-  createRoot(root).render(<Home />);
-}
+// The HTML is prerendered for each country (index.html swaps in ?country=de|nl before the first paint).
+if (root.hasChildNodes()) hydrateRoot(root, <Home />);
+else createRoot(root).render(<Home />);

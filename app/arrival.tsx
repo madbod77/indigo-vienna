@@ -255,7 +255,7 @@ export function Arrival({
           </div>
           <div className="arrival-actions">
             <a className="cta cta-light arrival-cta" href="#consultation-form">Обговорити план вступу <ArrowUpRight size={19} /></a>
-            <p className="arrival-note"><span className="note-dot" aria-hidden="true" />Консультація безкоштовна</p>
+            <p className="arrival-note"><span className="note-dot" aria-hidden="true" />Консультація безкоштовна<a className="arrival-pick" href="#directions">Обрати напрям <ArrowRight size={15} /></a></p>
           </div>
         </div>
       </div>

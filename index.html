@@ -22,6 +22,7 @@
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preload" href="%BASE_URL%fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="%BASE_URL%fonts/onest-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" as="image" href="%BASE_URL%images/vienna-opera-portrait-streak.webp" media="(max-width: 760px)" fetchpriority="high" />
     <link rel="preload" as="image" imagesrcset="%BASE_URL%images/vienna-opera-portrait-480.webp 480w, %BASE_URL%images/vienna-opera-portrait.webp 745w" imagesizes="100vw" media="(max-width: 760px)" fetchpriority="high" />
     <link rel="preload" as="image" imagesrcset="%BASE_URL%images/vienna-opera-800.webp 800w, %BASE_URL%images/vienna-opera-1200.webp 1200w, %BASE_URL%images/vienna-opera-1600.webp 1600w" imagesizes="100vw" media="(min-width: 761px)" fetchpriority="high" />
@@ -30,6 +31,8 @@
       (function () {
         var d = document.documentElement;
         d.classList.add('js');
+        var cq = new URLSearchParams(location.search).get('country');
+        if (cq === 'de' || cq === 'nl') d.classList.add('pre-swap');
         // Chromium only (Safari logs the key as an error): keep the form's submit above the on-screen keyboard.
         if ('virtualKeyboard' in navigator) { var v = document.querySelector('meta[name=viewport]'); if (v) v.content += ', interactive-widget=resizes-content'; }
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

@@ -48,7 +48,9 @@ export function travel(opts: {
   const inStreak = incoming.querySelector<HTMLElement>(".city-streak");
   if (inStreak) list.push(inStreak.animate(streakFrames, opt));
   if (outgoing) {
-    list.push(outgoing.animate(frames(-dir), opt));
+    // the outgoing frame dissolves over the last 35 % of the trip, so no strip of it lingers at the edge
+    const outFrames = frames(-dir).map((f, i) => ({ ...f, opacity: Math.min(1, Math.max(0, (1 - samples[i].progress) / 0.35)) }));
+    list.push(outgoing.animate(outFrames, opt));
     const outStreak = outgoing.querySelector<HTMLElement>(".city-streak");
     if (outStreak) list.push(outStreak.animate(streakFrames, opt));
   }

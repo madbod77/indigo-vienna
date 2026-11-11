@@ -88,7 +88,7 @@ export function Consultation({ country }: { country: Country }) {
                   aria-describedby={nameError ? "name-error" : undefined}
                   placeholder="Як до вас звертатися?"
                 />
-                {nameError && <p className="field-error" id="name-error" role="alert">Вкажіть, будь ласка, ваше ім’я.</p>}
+                {nameError && <p className="field-error" id="name-error" aria-live="polite">Вкажіть, будь ласка, ваше ім’я.</p>}
               </div>
               <div className="field">
                 <label htmlFor="destination">Країна навчання</label>
@@ -120,7 +120,7 @@ export function Consultation({ country }: { country: Country }) {
                   <option>Звертаюся як мама / тато</option>
                   <option>Інша ситуація</option>
                 </select>
-                {stageError && <p className="field-error" id="stage-error" role="alert">Оберіть ваш етап навчання.</p>}
+                {stageError && <p className="field-error" id="stage-error" aria-live="polite">Оберіть ваш етап навчання.</p>}
               </div>
               <div className="field">
                 <label htmlFor="question">Що вас цікавить? <span>Необов’язково</span></label>
