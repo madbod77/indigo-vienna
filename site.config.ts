@@ -1,2 +1,2 @@
-// GitHub Pages repository path; use '' for a domain-root deployment.
-export const basePath = '/indigo-vienna';
+// GitHub Pages repository path, derived from Vite's `base` ('' for a domain-root build used by local QA).
+export const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
