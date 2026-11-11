@@ -39,6 +39,8 @@ export function Sheet({
       // iOS: the page steps back around the middle of the screen.
       document.documentElement.style.setProperty("--sheet-y", `${window.scrollY + window.innerHeight / 2}px`);
       dialog.showModal();
+      // start on the panel itself (not on «Закрити», which would show a focus ring after a tap on iOS)
+      dialog.querySelector<HTMLElement>(".sheet-panel")?.focus({ preventScroll: true });
       document.documentElement.classList.add("sheet-open");
     } else if (!open && dialog.open) {
       dialog.close();
@@ -92,7 +94,7 @@ export function Sheet({
       }}
       onClick={(e) => { if (e.target === e.currentTarget) close(); }}
     >
-      <div className="sheet-panel">
+      <div className="sheet-panel" tabIndex={-1}>
         <div className="sheet-grip" aria-hidden="true"><span /></div>
         <button type="button" className="sheet-close" onClick={close}>Закрити <X size={18} /></button>
         {children}

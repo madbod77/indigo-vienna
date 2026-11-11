@@ -206,7 +206,7 @@ function RouteBar({ country, onMenu }: { country: Country; onMenu: () => void })
         <span className="dock-text">
           <span className="dock-small">Ваш вступ до</span>
           <span className="dock-name"><span key={country}>{genitive(country)}</span><ChevronDown size={15} /></span>
-          <span className="dock-flash" aria-hidden="true">{info.city} · {info.living}</span>
+          <span className="dock-flash" aria-hidden="true"><span>{info.city}</span><b>{info.living}</b></span>
         </span>
       </button>
       <a className="dock-cta" href="#consultation-form">Консультація <ArrowUpRight size={17} /></a>
@@ -422,7 +422,7 @@ function Steps({ country }: { country: Country }) {
         </div>
         <ol className="stack" ref={list} key={country}>
           {info.steps.map((step, i) => (
-            <li key={step.title} className="stack-card" data-step={i} style={{ "--i": i, "--city-blur": `url(${basePath}/images/${cityFile[country]}-portrait-blur.webp)`, "--city-sharp": `url(${basePath}/images/${cityFile[country]}-portrait-480.webp)` } as React.CSSProperties}>
+            <li key={step.title} className="stack-card" data-step={i} style={{ "--i": i, "--city-blur": `url(${basePath}/images/${cityFile[country]}-portrait-soft.webp)`, "--city-sharp": `url(${basePath}/images/${cityFile[country]}-portrait-480.webp)` } as React.CSSProperties}>
               <span className="stack-city" aria-hidden="true" />
               <p className="stack-k">Етап {i + 1} з {info.steps.length}</p>
               <h3>{step.title}</h3>
@@ -549,7 +549,7 @@ export default function Home({ initialCountry }: { initialCountry?: Country } = 
     requestAnimationFrame(() => {
       // Keep the reader at the changed list instead of following the shrinking page.
       const target = expanding
-        ? document.querySelector<HTMLElement>("#university-list li:nth-child(4)")
+        ? document.querySelector<HTMLElement>("#university-list li:first-child")
         : universityToggle.current;
       target?.focus({ preventScroll: true });
       target?.scrollIntoView({ behavior: "instant", block: "start" });
@@ -656,8 +656,10 @@ export default function Home({ initialCountry }: { initialCountry?: Country } = 
       intent.current = opts.swipe ?? null;
       if (!opts.scroll) {
         const y = window.scrollY;
+        const middle = y + window.innerHeight / 2;
         const marks = [...document.querySelectorAll<HTMLElement>("main > section")];
-        const el = marks.find((m) => m.offsetTop + m.offsetHeight - y > 80);
+        // the chapter the reader is looking at (layout positions: unaffected by the sheet's scale)
+        const el = marks.find((m) => m.offsetTop <= middle && m.offsetTop + m.offsetHeight > middle);
         if (el && el.id !== "top") anchor.current = { el, top: el.offsetTop - y };
       }
       startTransition(() => {
