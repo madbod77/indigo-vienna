@@ -36,6 +36,8 @@ export function Sheet({
     if (!dialog) return;
     if (open && !dialog.open) {
       opener.current = document.activeElement as HTMLElement | null;
+      // iOS: the page steps back around the middle of the screen.
+      document.documentElement.style.setProperty("--sheet-y", `${window.scrollY + window.innerHeight / 2}px`);
       dialog.showModal();
       document.documentElement.classList.add("sheet-open");
     } else if (!open && dialog.open) {

@@ -52,11 +52,11 @@ export function Consultation({ country }: { country: Country }) {
       <div className="wrap consultation-grid">
         <div className="consultation-copy">
           <p className="label">Ваш перший крок</p>
-          <h2 id="consultation-title" className="h2" data-reveal>Спочатку —<br />просто розмова.</h2>
+          <h2 id="consultation-title" className="h2" data-reveal><span className="w" style={{ "--d": "0ms" } as React.CSSProperties}>Спочатку</span> <span className="w" style={{ "--d": "45ms" } as React.CSSProperties}>—</span><br /><span className="h-soft"><span className="w" style={{ "--d": "90ms" } as React.CSSProperties}>просто</span> <span className="w" style={{ "--d": "135ms" } as React.CSSProperties}>розмова.</span></span></h2>
           <p className="lead">
             Запишіться на безкоштовну консультацію. Обговоримо ваш напрям, рівень мови, бюджет і питання, з яких варто почати.
           </p>
-          <ul className="consult-topics">
+          <ul className="consult-topics" data-blur="">
             <li>Вибір країни та програми</li>
             <li>Вимоги й документи</li>
             <li>Терміни та наступні кроки</li>
@@ -66,7 +66,7 @@ export function Consultation({ country }: { country: Country }) {
             <a href="tel:+380506093398">+380 50 609 33 98</a>
           </p>
         </div>
-        <div className="form-panel" id="consultation-form" tabIndex={-1}>
+        <div className="form-panel" id="consultation-form" tabIndex={-1} data-blur="">
           {!draft ? (
             <form onSubmit={prepare} noValidate>
               <h3>Заявка на консультацію</h3>
@@ -149,9 +149,7 @@ export function Consultation({ country }: { country: Country }) {
                 </p>
               </div>
               <div className="submit-dock">
-                <button type="submit" className="band form-submit">
-                  <span className="band-main">Підготувати заявку <ArrowRight size={20} /></span>
-                </button>
+                <button type="submit" className="cta cta-ink form-submit">Підготувати заявку <ArrowRight size={19} /></button>
               </div>
               <p className="privacy-note">
                 Спочатку перевірте текст, потім надішліть його в Telegram @Natalia_Indigo. Форма сама повідомлень не надсилає.
@@ -164,9 +162,7 @@ export function Consultation({ country }: { country: Country }) {
               <p className="form-help">Перевірте текст. У чаті Telegram натисніть «Надіслати», щоб Indigo отримав вашу заявку.</p>
               <label className="sr-only" htmlFor="request-preview">Текст заявки</label>
               <textarea id="request-preview" className="tg-bubble draft-text" readOnly rows={9} value={draft} />
-              <a className="band form-submit" href={"https://t.me/Natalia_Indigo?text=" + encodeURIComponent(draft)} target="_blank" rel="noreferrer">
-                <span className="band-main">Відкрити Telegram <ArrowUpRight size={20} /></span>
-              </a>
+              <a className="cta cta-ink form-submit" href={"https://t.me/Natalia_Indigo?text=" + encodeURIComponent(draft)} target="_blank" rel="noreferrer">Відкрити Telegram <ArrowUpRight size={19} /></a>
               <div className="draft-actions">
                 <button type="button" onClick={() => { setDraft(""); requestAnimationFrame(() => nameInput.current?.focus()); }}>
                   Змінити дані

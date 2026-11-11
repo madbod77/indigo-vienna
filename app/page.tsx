@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Pause, Play } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Menu, Pause, Play } from "lucide-react";
 import { basePath } from "@/site.config";
 import { countries, type Country, type Source } from "./admissions";
 import { universities } from "./universities";
@@ -48,7 +48,7 @@ function SourceLink({ source }: { source: Source }) {
   );
 }
 
-/** Heading whose words rise from a mask when it enters the screen (motion.md §5.5). Text stays real text. */
+/** Heading whose words rise out of blur when it enters the screen (motion.md). Text stays real text; the last line is the softer tone. */
 function Title({ id, lines, as: Tag = "h2", className = "h2" }: { id?: string; lines: string[]; as?: "h2" | "h3"; className?: string }) {
   let n = 0;
   return (
@@ -56,12 +56,14 @@ function Title({ id, lines, as: Tag = "h2", className = "h2" }: { id?: string; l
       {lines.map((line, li) => (
         <Fragment key={li}>
           {li > 0 && <br />}
-          {line.split(" ").map((word, wi) => (
-            <Fragment key={wi}>
-              {wi > 0 && " "}
-              <span className="w"><span style={{ "--d": `${(n++) * 40}ms` } as React.CSSProperties}>{word}</span></span>
-            </Fragment>
-          ))}
+          <span className={li > 0 && li === lines.length - 1 ? "h-soft" : undefined}>
+            {line.split(" ").map((word, wi) => (
+              <Fragment key={wi}>
+                {wi > 0 && " "}
+                <span className="w" style={{ "--d": `${(n++) * 45}ms` } as React.CSSProperties}>{word}</span>
+              </Fragment>
+            ))}
+          </span>
         </Fragment>
       ))}
     </Tag>
@@ -118,8 +120,8 @@ function Header({ country, onMenu }: { country: Country; onMenu: () => void }) {
         <button type="button" className="header-guide" onClick={onMenu} aria-haspopup="dialog">
           <span>Довідник:</span> {countries[country].name} <ChevronDown size={16} />
         </button>
-        <button type="button" className="header-menu" onClick={onMenu} aria-haspopup="dialog">Меню</button>
-        <a className="header-cta" href="#consultation-form">Консультація <ArrowUpRight size={17} /></a>
+        <a className="header-cta cta cta-light cta-s" href="#consultation-form">Консультація</a>
+        <button type="button" className="header-menu" onClick={onMenu} aria-haspopup="dialog" aria-label="Меню"><Menu size={19} /></button>
       </div>
     </header>
   );
@@ -152,7 +154,7 @@ function RouteSheet({ open, onClose, country, choose }: { open: boolean; onClose
   );
 }
 
-/** Нижня смуга маршруту: перемикач країни + головна дія під великим пальцем (телефон). */
+/** Нижня капсула маршруту (телефон): країна + головна дія під великим пальцем; при зміні країни розкривається «острів». */
 function RouteBar({ country, onMenu }: { country: Country; onMenu: () => void }) {
   const [visible, setVisible] = useState(false);
   const [flash, setFlash] = useState(false);
@@ -171,22 +173,24 @@ function RouteBar({ country, onMenu }: { country: Country; onMenu: () => void })
     update();
     return () => { observer.disconnect(); window.removeEventListener("scroll", update); };
   }, []);
-  // A change of country made away from the first screen is confirmed here, with data from the guide.
   useEffect(() => {
     if (first.current) { first.current = false; return; }
     setFlash(true);
-    const t = window.setTimeout(() => setFlash(false), 1800);
+    const t = window.setTimeout(() => setFlash(false), 2000);
     return () => window.clearTimeout(t);
   }, [country]);
   const info = countries[country];
   return (
-    <nav className={"route-bar" + (visible ? " is-visible" : "") + (flash ? " is-flash" : "")} aria-label="Швидкі переходи" inert={!visible || undefined}>
-      <button type="button" className="rb-country" onClick={onMenu} aria-haspopup="dialog">
-        <span className="rb-small">Ваш вступ до</span>
-        <span className="rb-name"><span key={country}>{genitive(country)}</span> <ChevronDown size={16} /></span>
-        <span className="rb-flash" aria-hidden="true">{info.city} · {info.living}</span>
+    <nav className={"dock" + (visible ? " is-visible" : "") + (flash ? " is-flash" : "")} aria-label="Швидкі переходи" inert={!visible || undefined}>
+      <button type="button" className="dock-country" onClick={onMenu} aria-haspopup="dialog">
+        <img className="dock-thumb" src={`${basePath}/images/${info.image.replace(".jpg", "-480.webp")}`} alt="" width="36" height="36" loading="lazy" decoding="async" />
+        <span className="dock-text">
+          <span className="dock-small">Ваш вступ до</span>
+          <span className="dock-name"><span key={country}>{genitive(country)}</span><ChevronDown size={15} /></span>
+          <span className="dock-flash" aria-hidden="true">{info.city} · {info.living}</span>
+        </span>
       </button>
-      <a className="rb-cta" href="#consultation-form">Консультація <ArrowUpRight size={18} /></a>
+      <a className="dock-cta" href="#consultation-form">Консультація <ArrowUpRight size={17} /></a>
     </nav>
   );
 }
@@ -244,28 +248,30 @@ function Departures({ country, choose }: { country: Country; choose: (c: Country
             <p className="label label-night">Три напрями. Ваш вибір.</p>
             <Title id="directions-title" lines={["Три напрями.", "Безліч можливостей."]} />
           </div>
-          <div className="departures-lead">
+          <div className="departures-lead" data-blur="">
             <p>Оберіть, де почнеться ваша нова історія. Умови вступу, бюджет і наступні кроки — усе зібрано в одному місці.</p>
-            <p className="levels" role="group" aria-label="Освітні можливості">Бакалаврат · Магістратура · Підготовчі програми</p>
+            <p className="levels" role="group" aria-label="Освітні можливості"><span>Бакалаврат</span><span>Магістратура</span><span>Підготовчі програми</span></p>
           </div>
         </div>
-        <ul className="board">
-          {order.map((id) => (
-            <li key={id}>
-              <button type="button" className="board-row" aria-pressed={country === id}
+        <ul className="board" data-reveal="">
+          {order.map((id, i) => (
+            <li key={id} style={{ "--d": `${i * 90}ms` } as React.CSSProperties}>
+              <button type="button" className="board-card" aria-pressed={country === id}
                 onClick={() => choose(id, { scroll: true })} aria-label={`Обрати напрям: ${countries[id].name}`}>
-                <span className="board-name">{countries[id].name}</span>
-                <span className="board-meta">
-                  <span className="board-local">{countries[id].local}</span>
-                  {country === id && <span className="board-on"><Check size={14} /> Обрано</span>}
-                </span>
-                <span className="board-caption">{countries[id].caption}</span>
-                <span className="board-cost"><b>{countries[id].living}</b> життя на місяць · орієнтир</span>
-                <span className="board-go">Дослідити напрям <ArrowUpRight size={18} /></span>
-                <span className="board-thumb" aria-hidden="true">
-                  <img src={`${basePath}/images/${countries[id].image.replace(".jpg", "-480.webp")}`}
+                <span className="board-thumb" aria-hidden="true" style={{ "--streak": `url(${basePath}/images/${countries[id].image.replace(".jpg", "-streak.webp")})` } as React.CSSProperties}>
+                  <img className="thumb-sharp" src={`${basePath}/images/${countries[id].image.replace(".jpg", "-800.webp")}`}
                     srcSet={`${basePath}/images/${countries[id].image.replace(".jpg", "-480.webp")} 480w, ${basePath}/images/${countries[id].image.replace(".jpg", "-800.webp")} 800w`}
-                    sizes="(max-width: 760px) 30vw, 200px" alt="" width="480" height="600" loading="lazy" decoding="async" />
+                    sizes="(max-width: 760px) 92vw, 33vw" alt="" width="800" height="600" loading="lazy" decoding="async" />
+                  <span className="board-cost"><b>{countries[id].living}</b> життя на місяць · орієнтир</span>
+                </span>
+                <span className="board-body">
+                  <span className="board-top">
+                    <span className="board-name">{countries[id].name}</span>
+                    {country === id ? <span className="chip chip-on"><Check size={13} /> Обрано</span> : <span className="chip">{countries[id].local}</span>}
+                  </span>
+                  {country === id && <span className="board-local">{countries[id].local}</span>}
+                  <span className="board-caption">{countries[id].caption}</span>
+                  <span className="board-go">Дослідити напрям <ArrowUpRight size={17} /></span>
                 </span>
               </button>
             </li>
@@ -301,7 +307,7 @@ function UniversityRail({ country, list, expanded, onToggle, toggleRef }: {
         <span className="university-count">{list.length} закладів</span>
       </div>
       <p className="university-note">Добірка для знайомства з напрямами. Це не рейтинг і не перелік партнерів Indigo. Правила вступу визначає кожен заклад. {country === "de" ? "На фото — кампуси університетів; автори й ліцензії вказані внизу сторінки." : "Зображення кампусів — візуальні ілюстрації."}</p>
-      <ul id="university-list" ref={rail} className={"rail" + (expanded ? " is-grid" : "")}>
+      <ul id="university-list" ref={rail} className={"rail" + (expanded ? " is-grid" : "")} data-blur="">
         {list.map((university, index) => (
           <li key={university.name} data-i={index} tabIndex={-1}>
             <div className="uni-image">
@@ -322,7 +328,7 @@ function UniversityRail({ country, list, expanded, onToggle, toggleRef }: {
           <span style={{ width: `${100 / list.length}%`, transform: `translateX(${active * 100}%)` }} />
         </div>
       )}
-      <button ref={toggleRef} type="button" className="row-button" aria-expanded={expanded} aria-controls="university-list" onClick={onToggle}>
+      <button ref={toggleRef} type="button" className="row-button pill-button" aria-expanded={expanded} aria-controls="university-list" onClick={onToggle}>
         {expanded ? "Згорнути добірку" : `Переглянути всі ${list.length} університетів`}<ChevronDown size={18} style={{ transform: expanded ? "rotate(180deg)" : undefined }} />
       </button>
     </section>
@@ -361,46 +367,52 @@ function LivingCompare({ country }: { country: Country }) {
   );
 }
 
-/** Чотири кроки як станції: закріплена сцена, поріг кожні 45svh перемикає станцію (без scrub). */
+/** Чотири кроки — стос карток (як «Етап 1 з 4» у Velira): картка стоїть, доки її дочитають, наступна насувається, попередня відступає в тінь. */
 function Steps({ country }: { country: Country }) {
   const info = countries[country];
-  const [active, setActive] = useState(0);
-  const marks = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLOListElement>(null);
   useEffect(() => {
-    const el = marks.current;
+    const el = list.current;
     if (!el) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.i));
-    }, { rootMargin: "-50% 0px -50% 0px" });
-    el.querySelectorAll("span").forEach((s) => io.observe(s));
-    return () => io.disconnect();
-  }, []);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const cards = [...el.querySelectorAll<HTMLElement>(".stack-card")];
+      cards.forEach((card, i) => {
+        const next = cards[i + 1];
+        if (!next) return;
+        const r = card.getBoundingClientRect();
+        const cover = Math.min(1, Math.max(0, (r.top + r.height - next.getBoundingClientRect().top) / r.height));
+        card.style.setProperty("--cover", cover.toFixed(3));
+      });
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
+  }, [country]);
   return (
     <section className="steps day" id="steps" aria-labelledby="steps-title">
-      <div className="drum" style={{ "--active": active } as React.CSSProperties}>
-        <div className="drum-sticky">
-          <div className="wrap drum-inner">
-            <div className="drum-head">
-              <p className="label">{info.name} · шлях до навчання</p>
-              <Title id="steps-title" lines={["Від «хочу» —", "до плану дій."]} />
-            </div>
-            <ol className="drum-list" key={country}>
-              {info.steps.map((step, i) => (
-                <li key={step.title} style={{ "--i": i } as React.CSSProperties} data-state={i === active ? "on" : i < active ? "past" : "next"} data-dist={Math.abs(i - active)}>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
+      <div className="wrap">
+        <div className="steps-head">
+          <p className="label">{info.name} · шлях до навчання</p>
+          <Title id="steps-title" lines={["Від «хочу» —", "до плану дій."]} />
         </div>
-        <div className="drum-marks" ref={marks} aria-hidden="true">
-          {info.steps.map((_, i) => <span key={i} data-i={i} />)}
+        <ol className="stack" ref={list} key={country}>
+          {info.steps.map((step, i) => (
+            <li key={step.title} className="stack-card" style={{ "--i": i } as React.CSSProperties}>
+              <p className="stack-k">Етап {i + 1} з {info.steps.length}</p>
+              <h3>{step.title}</h3>
+              <p className="stack-text">{step.text}</p>
+              <span className="card-shade" aria-hidden="true" />
+            </li>
+          ))}
+        </ol>
+        <div className="steps-footer" data-blur="">
+          <p>Ще не визначилися з країною чи спеціальністю? Це теж хороша точка для першої розмови.</p>
+          <a className="cta cta-ink" href="#consultation-form">Поговорити з Indigo <ArrowUpRight size={18} /></a>
         </div>
-      </div>
-      <div className="wrap steps-footer">
-        <p>Ще не визначилися з країною чи спеціальністю? Це теж хороша точка для першої розмови.</p>
-        <a className="text-link" href="#consultation-form">Поговорити з Indigo <ArrowUpRight size={18} /></a>
       </div>
     </section>
   );
@@ -425,7 +437,7 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
   const shown = info.faq.slice(0, all ? undefined : 6);
   const item = current !== null ? info.faq[current] : null;
   return (
-    <section className="faq day" id="faq" aria-labelledby="faq-title">
+    <section className="faq day" id="faq" aria-labelledby="faq-title" data-scrub="sheet">
       <div className="wrap faq-grid" data-mode={mode}>
         <div className="faq-head">
           <p className="label">{info.name} · питання й відповіді</p>
@@ -433,7 +445,7 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
           <p className="faq-sub">Короткі відповіді та офіційні джерела для вашого рішення.</p>
           <button type="button" className="text-link" onClick={onMenu}>Змінити країну <ArrowRight size={16} /></button>
         </div>
-        <div className="faq-index" key={country}>
+        <div className="faq-index" key={country} data-blur="">
           <p className="faq-count">{info.name} <span>{info.faq.length} питань</span></p>
           {shown.map((q, i) => (
             <details key={q.question} name="admissions-faq" data-on={mode === "panel" && panel === i ? "" : undefined}>
@@ -450,7 +462,7 @@ function Faq({ country, all, setAll, onMenu }: { country: Country; all: boolean;
               </div>
             </details>
           ))}
-          <button className="row-button" type="button" aria-expanded={all} onClick={() => setAll(!all)}>
+          <button className="row-button faq-more" type="button" aria-expanded={all} onClick={() => setAll(!all)}>
             {all ? "Показати менше" : "Ще 4 питання: робота, стипендії та майбутнє"}
             <ChevronDown size={17} style={{ transform: all ? "rotate(180deg)" : undefined }} />
           </button>
@@ -550,8 +562,11 @@ export default function Home() {
         if (r.bottom < -vh || r.top > vh * 2) continue;
         const kind = el.dataset.scrub;
         let p = 0;
-        if (kind === "dusk") p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - vh)));
-        else p = Math.min(1, Math.max(0, (vh - r.top) / (r.height + vh * 0.25)));
+        if (kind === "dusk") p = -r.top / Math.max(1, r.height - vh);
+        else if (kind === "dawn") p = (vh * 0.9 - r.top) / (vh * 0.9 + r.height * 0.5); // light rises while the band crosses the screen
+        else if (kind === "sheet") p = (vh - r.bottom) / (vh * 0.6); // the consultation sheet edge rises over the questions
+        else p = (vh - r.top) / (r.height + vh * 0.25);
+        p = Math.min(1, Math.max(0, p));
         el.style.setProperty("--p", p.toFixed(3));
       }
     };
@@ -570,8 +585,8 @@ export default function Home() {
   useEffect(() => {
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
-    }, { rootMargin: "0px 0px -20% 0px" });
-    document.querySelectorAll("[data-reveal]:not(.in)").forEach((el) => io.observe(el));
+    }, { rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll("[data-reveal]:not(.in), [data-blur]:not(.in)").forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, [country, allUniversities]);
 
@@ -639,10 +654,10 @@ export default function Home() {
         <Arrival country={country} choose={choose} intent={intent} universitiesCount={universitiesCount} />
         <UniversityTicker />
         <Departures country={country} choose={choose} />
-        <div className="dawn" data-scrub="dawn" aria-hidden="true"><span className="dawn-light" /></div>
+        <div className="dawn" data-scrub="dawn" aria-hidden="true"><span className="dawn-sky" /><span className="dawn-light" /></div>
         <section className="guide day" id="guide" aria-labelledby="guide-title">
           <div className="wrap">
-            <div className="guide-head">
+            <div className="guide-head" data-reveal="">
               <p className="label">Можливості та вимоги</p>
               <h2 id="guide-title" className="h2 sentence">
                 Ваш вступ до{" "}
@@ -653,18 +668,18 @@ export default function Home() {
               <CountryTabs country={country} onChange={(value) => choose(value)} className="tabs-day guide-tabs" />
             </div>
             <p className="lead guide-intro" key={"intro-" + country}>{info.intro}</p>
-            <div className="paths" key={"paths-" + country}>
-              {info.paths.map((path) => (
-                <article key={path.title}>
+            <div className="paths" key={"paths-" + country} data-blur="">
+              {info.paths.map((path, i) => (
+                <article key={path.title} style={{ "--d": `${i * 80}ms` } as React.CSSProperties}>
                   <h3>{path.title}</h3>
                   <p>{path.text}</p>
                   <SourceLink source={path.source} />
                 </article>
               ))}
             </div>
-            <div className="catalogue">
+            <div className="catalogue" data-blur="">
               <p>{info.catalogueNote}</p>
-              <a className="row-link" href={info.catalogue.url} target="_blank" rel="noreferrer">
+              <a className="cta cta-ink catalogue-link" href={info.catalogue.url} target="_blank" rel="noreferrer">
                 {info.catalogue.label}<ArrowUpRight size={20} />
               </a>
             </div>
@@ -677,7 +692,7 @@ export default function Home() {
           <div className="wrap">
             <p className="label">{info.name} · фінанси</p>
             <Title id="budget-title" lines={["Великі плани.", "Ясний бюджет."]} />
-            <div className="budget-grid">
+            <div className="budget-grid" data-blur="">
               <div className="living-cost">
                 <p className="label">Життя на місяць</p>
                 <p className="cost-number num" key={"cost-" + country}>{info.living}</p>

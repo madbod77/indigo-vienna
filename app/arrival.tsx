@@ -43,6 +43,10 @@ function CityLayer({ id, current, warm }: { id: Country; current: boolean; warm:
         />
       </picture>
       <picture>
+        <source media="(max-width: 760px)" srcSet={load ? img(name + "-portrait-blur.webp") : undefined} />
+        <img className="city-blur" src={load ? img(name + "-blur.webp") : undefined} alt="" style={{ objectPosition: focus[id] }} />
+      </picture>
+      <picture>
         <source media="(max-width: 760px)" srcSet={load ? img(name + "-portrait-streak.webp") : undefined} />
         <img className="city-streak" src={load ? img(name + "-streak.webp") : undefined} alt="" style={{ objectPosition: focus[id] }} />
       </picture>
@@ -61,73 +65,16 @@ export function CountryTabs({
   withPrices?: boolean;
   className?: string;
 }) {
-  const bar = useRef<HTMLSpanElement>(null);
-  const group = useRef<HTMLDivElement>(null);
-  // Underline moves with the existing spring (k 300, c 35 → ζ≈1, ≈380 ms).
-  useLayoutEffect(() => {
-    const root = group.current;
-    const line = bar.current;
-    if (!root || !line) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let frame = 0;
-    let last = 0;
-    const state = { x: Number(line.dataset.x ?? NaN), w: Number(line.dataset.w ?? NaN), vx: 0, vw: 0 };
-    const target = { x: 0, w: 0 };
-    const paint = () => {
-      line.style.transform = `translateX(${state.x}px) scaleX(${state.w / 100})`;
-      line.dataset.x = String(state.x);
-      line.dataset.w = String(state.w);
-    };
-    const measure = () => {
-      const active = root.querySelector<HTMLElement>('button[aria-pressed="true"] .tab-name');
-      const button = active?.parentElement;
-      if (!active || !button || !active.offsetParent) return; // hidden (display: none) at this width
-      target.x = button.offsetLeft + active.offsetLeft - (active.offsetParent === button ? 0 : button.offsetLeft);
-      target.w = active.offsetWidth;
-      if (Number.isNaN(state.x) || reduced) {
-        state.x = target.x;
-        state.w = target.w;
-        paint();
-        return;
-      }
-      cancelAnimationFrame(frame);
-      last = 0;
-      frame = requestAnimationFrame(step);
-    };
-    function step(now: number) {
-      const dt = last ? Math.min((now - last) / 1000, 0.032) : 1 / 60;
-      last = now;
-      state.vx += (300 * (target.x - state.x) - 35 * state.vx) * dt;
-      state.vw += (300 * (target.w - state.w) - 35 * state.vw) * dt;
-      state.x += state.vx * dt;
-      state.w += state.vw * dt;
-      paint();
-      if (Math.abs(target.x - state.x) > 0.1 || Math.abs(state.vx) > 0.1 || Math.abs(target.w - state.w) > 0.1)
-        frame = requestAnimationFrame(step);
-      else {
-        state.x = target.x;
-        state.w = target.w;
-        state.vx = state.vw = 0;
-        paint();
-      }
-    }
-    const resize = new ResizeObserver(measure);
-    resize.observe(root);
-    measure();
-    return () => {
-      cancelAnimationFrame(frame);
-      resize.disconnect();
-    };
-  }, [country]);
+  // iOS segmented control: equal segments, the thumb moves with transform only.
   return (
-    <div className={"tabs " + className} role="group" aria-label="Оберіть країну навчання" ref={group}>
+    <div className={"segmented " + className} role="group" aria-label="Оберіть країну навчання" style={{ "--seg": order.indexOf(country) } as React.CSSProperties}>
+      <span className="seg-thumb" aria-hidden="true" />
       {order.map((id) => (
         <button key={id} type="button" aria-pressed={country === id} onClick={() => onChange(id)}>
           <span className="tab-name">{countries[id].name}</span>
           {withPrices && <span className="tab-price">{countries[id].living}</span>}
         </button>
       ))}
-      <span className="tabs-line" aria-hidden="true" ref={bar} />
     </div>
   );
 }
@@ -300,31 +247,31 @@ export function Arrival({
       <div className="arrival-one" ref={screen}>
         <div className="wrap arrival-copy">
           <p className="city-line" aria-live="polite"><span key={country}>{info.city}</span></p>
-          <h1 id="hero-title">Ваша освіта.<br />Без кордонів.</h1>
+          <h1 id="hero-title"><span className="h1-line">Ваша освіта.</span><br /><span className="h1-line h1-soft">Без кордонів.</span></h1>
           <p className="arrival-lead">Від першого «куди?» до ясного плану вступу. Знайдіть свій напрям разом з Indigo.</p>
           <div className="arrival-choice">
             <CountryTabs country={country} onChange={(value) => choose(value)} withPrices className="tabs-night" />
             <a className="text-link link-night arrival-directions" href="#directions">Обрати напрям <ArrowRight size={17} /></a>
           </div>
-          <a className="band arrival-cta" href="#consultation-form">
-            <span className="band-main">Обговорити план вступу <ArrowUpRight size={20} /></span>
-            <span className="band-note">Консультація безкоштовна</span>
-          </a>
+          <div className="arrival-actions">
+            <a className="cta cta-light arrival-cta" href="#consultation-form">Обговорити план вступу <ArrowUpRight size={19} /></a>
+            <p className="arrival-note"><span className="note-dot" aria-hidden="true" />Консультація безкоштовна</p>
+          </div>
         </div>
       </div>
       <div className="arrival-two">
         <div className="wrap arrival-two-grid">
           <div className="arrival-facts-wrap">
-            <p className="label label-night">Ваш новий горизонт</p>
-            <dl className="arrival-facts" key={"facts-" + country} aria-label={`${info.name} коротко`}>
-              <div><dt>Життя на місяць · орієнтир по країні</dt><dd className="num">{info.living}</dd></div>
-              <div><dt>Навчання</dt><dd className="fact-text">{info.tuition.replace(/-/g, "‑")}</dd></div>
-              <div><dt>{country === "nl" ? "Програми" : `${info.name}: у довіднику`}</dt><dd className="num">{country === "nl" ? "Studyfinder" : `${universitiesCount} університетів`}</dd></div>
+            <p className="label label-night" data-blur="">Ваш новий горизонт</p>
+            <dl className="arrival-facts" key={"facts-" + country} aria-label={`${info.name} коротко`} data-blur="">
+              <div className="widget widget-wide"><dt>Життя на місяць · орієнтир по країні</dt><dd className="num">{info.living}</dd></div>
+              <div className="widget"><dt>Навчання</dt><dd className="fact-text">{info.tuition.replace(/-/g, "‑")}</dd></div>
+              <div className="widget"><dt>{country === "nl" ? "Програми" : `${info.name}: у довіднику`}</dt><dd className="num num-s">{country === "nl" ? "Studyfinder" : `${universitiesCount} університетів`}</dd></div>
             </dl>
           </div>
           <div className="arrival-next">
-            <p className="arrival-quote">Великі зміни починаються з одного зрозумілого кроку.</p>
-            <nav className="row-links" aria-label="Швидкі розділи">
+            <p className="arrival-quote" data-blur="">Великі зміни починаються з одного зрозумілого кроку.</p>
+            <nav className="row-links glass-list" aria-label="Швидкі розділи" data-blur="">
               <a href="#guide"><span>Умови вступу<small>Освіта, мова, документи</small></span><ArrowUpRight size={20} /></a>
               <a href="#budget"><span>Планування бюджету<small>Навчання та життя</small></span><ArrowUpRight size={20} /></a>
               <a href="#steps"><span>Ваш наступний крок<small>Від вибору до подання</small></span><ArrowUpRight size={20} /></a>
