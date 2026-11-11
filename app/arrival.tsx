@@ -38,7 +38,7 @@ function CityLayer({ id, current, warm }: { id: Country; current: boolean; warm:
           alt=""
           style={{ objectPosition: focus[id] }}
           fetchPriority={current ? "high" : "low"}
-          decoding={current ? "sync" : "async"}
+          decoding="async"
           data-hero-sharp={current ? "" : undefined}
         />
       </picture>

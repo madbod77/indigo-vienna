@@ -2,6 +2,7 @@
 // ніч (питання «куди?») → світанок (вибір) → день (ясний план) → знову ніч (майбутнє з вашим ім’ям).
 import {
   Fragment,
+  Suspense,
   startTransition,
   useCallback,
   useId,
@@ -169,9 +170,11 @@ function RouteBar({ country, onMenu }: { country: Country; onMenu: () => void })
     const observer = new IntersectionObserver(update, { threshold: [0, 0.4, 1] });
     observer.observe(cta);
     observer.observe(consultation);
-    window.addEventListener("scroll", update, { passive: true });
-    update();
-    return () => { observer.disconnect(); window.removeEventListener("scroll", update); };
+    let frame = 0;
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; update(); }); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); };
   }, []);
   useEffect(() => {
     if (first.current) { first.current = false; return; }
@@ -389,7 +392,7 @@ function Steps({ country }: { country: Country }) {
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    update();
+    onScroll();
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
   }, [country]);
   return (
@@ -571,7 +574,7 @@ export default function Home() {
       }
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(tick); };
-    tick();
+    onScroll(); // first measurement on the next frame, not inside the hydration task
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
@@ -629,8 +632,8 @@ export default function Home() {
         const el = marks.find((m) => m.getBoundingClientRect().bottom > 80);
         if (el && el.id !== "top") anchor.current = { el, top: el.getBoundingClientRect().top };
       }
-      setCountry(value);
       startTransition(() => {
+        setCountry(value);
         setAllQuestions(false);
         setAllUniversities(false);
       });
@@ -652,9 +655,10 @@ export default function Home() {
       <Header country={country} onMenu={() => setMenu(true)} />
       <main id="main" tabIndex={-1}>
         <Arrival country={country} choose={choose} intent={intent} universitiesCount={universitiesCount} />
-        <UniversityTicker />
-        <Departures country={country} choose={choose} />
+        <Suspense fallback={null}><UniversityTicker /></Suspense>
+        <Suspense fallback={null}><Departures country={country} choose={choose} /></Suspense>
         <div className="dawn" data-scrub="dawn" aria-hidden="true"><span className="dawn-sky" /><span className="dawn-light" /></div>
+        <Suspense fallback={null}>
         <section className="guide day" id="guide" aria-labelledby="guide-title">
           <div className="wrap">
             <div className="guide-head" data-reveal="">
@@ -688,6 +692,8 @@ export default function Home() {
             )}
           </div>
         </section>
+        </Suspense>
+        <Suspense fallback={null}>
         <section className="budget day" id="budget" aria-labelledby="budget-title">
           <div className="wrap">
             <p className="label">{info.name} · фінанси</p>
@@ -718,9 +724,10 @@ export default function Home() {
             </p>
           </div>
         </section>
-        <Steps country={country} />
-        <Faq country={country} all={allQuestions} setAll={setAllQuestions} onMenu={() => setMenu(true)} />
-        <Consultation country={country} />
+        </Suspense>
+        <Suspense fallback={null}><Steps country={country} /></Suspense>
+        <Suspense fallback={null}><Faq country={country} all={allQuestions} setAll={setAllQuestions} onMenu={() => setMenu(true)} /></Suspense>
+        <Suspense fallback={null}><Consultation country={country} /></Suspense>
         <div className="nightfall" data-scrub="nightfall" aria-hidden="true" />
       </main>
       <footer className="footer night" data-scrub="footer">
